@@ -1,0 +1,10 @@
+.cache
+.vs
+auto-save-list
+elpa
+saves
+transient
+.projectile
+*.eld
+*.cache
+recentf
