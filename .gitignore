@@ -8,3 +8,5 @@ transient
 *.eld
 *.cache
 recentf
+.*sqlite
+var/

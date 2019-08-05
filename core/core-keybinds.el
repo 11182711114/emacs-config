@@ -1,10 +1,12 @@
+;;; core-keybinds.el -*- lexical-binding: t; -*-
+
+(require 'core-package)
 
 (defvar leader-key "SPC")
 (defvar leader-alt-key "M-SPC")
 
 (defvar localleader-key "SPC m")
 (defvar localleader-alt-key "M-SPC m")
-
 
 (use-package which-key
   :defer 1
@@ -20,16 +22,11 @@
   (which-key-add-key-based-replacements localleader-key "<localleader>")
   (which-key-mode))
 
-
-
-
-
-
 (defvar escape-hook nil
-  "A hook run after C-g is pressed 
-  (or ESC in normal mode, for evil users). 
-  Both trigger `doom/escape'. 
-  If any hook returns non-nil, 
+  "A hook run after C-g is pressed
+  (or ESC in normal mode, for evil users)
+  Both trigger `doom/escape'.
+  If any hook returns non-nil,
   all hooks after it are ignored.")
 
 (defun escape ()
@@ -47,18 +44,23 @@
 
 (global-set-key [remap keyboard-quit] #'escape)
 
-
-
-
-
-
-
-
-
-
-
-
-(use-package general)
+(defalias 'define-key! #'general-def)
+(use-package general
+  :ensure t
+  :init
+  (setq general-override-states '(insert
+                                  emacs
+                                  hybrid
+                                  normal
+                                  visual
+                                  motion
+                                  operator
+                                  replace))
+  :config
+  (general-define-key
+  :states '(normal visual motion)
+  :keymaps 'override
+  "SPC" 'hydra-space/body))
 
 ;; * Global Keybindings
 ;; `general-define-key' acts like `evil-define-key' when :states is specified
@@ -152,7 +154,10 @@
 (general-setq evil-search-module 'evil-search)
 
 
-(my-leader-def 
-  :states 'normal 
+(my-leader-def
+  :states 'normal
   :keymaps 'normal
   "p" 'projectile-command-map)
+
+(provide 'core-keybinds)
+;;; keybinds.el ends here
