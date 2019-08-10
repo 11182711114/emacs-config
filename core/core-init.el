@@ -27,10 +27,14 @@
 ;;; Lockfiles unfortunately cause more pain than benefit
    create-lockfiles nil)
 
-
-(require 'core-ui)
+(require 'core-util)
 (require 'core-evil)
+(require 'core-ui)
 (require 'core-keybinds)
 (require 'core-project)
+
+(require 'doom-dash)
+(run-hooks 'doom-init-ui-hook)
+(map! "M-x" #'+doom-dashboard|init)
 
 (provide 'core-init)

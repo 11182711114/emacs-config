@@ -1,9 +1,5 @@
 ;;; ui/doom-dashboard/config.el -*- lexical-binding: t; -*-
 
-(require 'general)
-(defalias 'define-key! #'general-def)
-
-
 (defun +doom-dashboard--help-echo ()
   (when-let* ((btn (button-at (point)))
               (msg (button-get btn 'help-echo)))

@@ -2,6 +2,9 @@
 
 (require 'core-package)
 
+(defvar doom-init-ui-hook nil
+  "List of hooks to run when the UI has been initialized.")
+
 ;; Disable menu-bar, tool-bar, and scroll-bar.
 (if (fboundp 'menu-bar-mode)
     (menu-bar-mode -1))
@@ -107,9 +110,21 @@
 ;; may have their own settings.
 (load-theme 'doom-vibrant t)
 (use-package solaire-mode
+  :defer t
+  :init 
+  (defun solaire-mode-swap-bg-maybe ()
+    (when-let (rule (assq doom-theme +doom-solaire-themes))
+      (require 'solaire-mode)
+      (when (cdr rule)
+        (solaire-mode-swap-bg)
+        (with-eval-after-load 'ansi-color
+          (when-let (color (face-background 'default))
+            (setf (aref ansi-color-names-vector 0) color))))))
   :hook
   ((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
   (minibuffer-setup . solaire-mode-in-minibuffer)
+  (doom-load-theme . #'solaire-mode-swap-bg-maybe)
+  (focus-in . #'solaire-mode-reset)
   :config
   (solaire-global-mode +1)
   (solaire-mode-swap-bg))
@@ -118,14 +133,17 @@
 
 (use-package evil-anzu
   :defer t
-  :after evil anzu)
+  :after (evil anzu))
 
 (use-package nlinum
   :config  
   (setq nlinum-highlight-current-line t))
 ;; (global-hl-line-mode +1)
 
-(use-package winum)
+(use-package winum
+  :defer t
+  :config
+  (winum-mode))
 
 (use-package treemacs
     :ensure t
@@ -133,41 +151,53 @@
     :config
     (doom-themes-treemacs-config)
     (add-to-list 'treemacs-pre-file-insert-predicates #'treemacs-is-file-git-ignored?)
-    (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action))
+    (define-key treemacs-mode-map [mouse-1] #'treemacs-single-click-expand-action)
+    (setq treemacs-follow-after-init t
+      treemacs-is-never-other-window t
+      treemacs-sorting 'alphabetic-case-insensitive-desc
+      treemacs-persist-file (concat doom-cache-dir "treemacs-persist")
+      treemacs-last-error-persist-file (concat doom-cache-dir "treemacs-last-error-persist"))
+      (treemacs-follow-mode -1))
 (use-package treemacs-magit
   :after treemacs magit
   :ensure t)
 (use-package treemacs-evil
-  :after treemacs evil
-  :ensure t)
+  :after (treemacs evil)
+  :ensure t
+  :config
+  (define-key! evil-treemacs-state-map
+    [return] #'treemacs-RET-action
+    [tab]    #'treemacs-TAB-action
+    "TAB"    #'treemacs-TAB-action))
 (use-package treemacs-projectile
     :after treemacs projectile)
-;; (treemacs-follow-mode t)
-;; (treemacs-filewatch-mode t)
 
-(use-package dashboard
-  :preface
-  (defvar my/logos '(1 2 3 ));;'logo 'emacs))
-  (defun my/random-dashboard-logo ()
-    "Gets a random logo to use for dashboard."
-    (nth (random (length my/logos)) my/logos))
-  :init
-  (add-hook 'after-init-hook 'dashboard-refresh-buffer)
-  :config
-  (dashboard-setup-startup-hook)
-  (setq dashboard-startup-banner (my/random-dashboard-logo)
-	dashboard-banner-logo-title "[ E M A C S ]"
-	dashboard-center-content t
-	dashboard-set-heading-icons t
-	dashboard-set-file-icons t
-	dashboard-set-init-info t
-	dashboard-items '((agenda . 5)
-			    (projects . 5)
-			    (bookmarks . 8)
-			    (recents . 12))))
+
+
+;; (use-package dashboard
+;;   :preface
+;;   (defvar my/logos '(1 2 3));;'logo 'emacs))
+;;   (defun my/random-dashboard-logo ()
+;;     "Gets a random logo to use for dashboard."
+;;     (nth (random (length my/logos)) my/logos))
+;;   :init
+;;   (add-hook 'after-init-hook 'dashboard-refresh-buffer)
+;;   :config
+;;   (dashboard-setup-startup-hook)
+;;   (setq dashboard-startup-banner (my/random-dashboard-logo)
+;; 	dashboard-banner-logo-title "[ E M A C S ]"
+;; 	dashboard-center-content t
+;; 	dashboard-set-heading-icons t
+;; 	dashboard-set-file-icons t
+;; 	dashboard-set-init-info t
+;; 	dashboard-items '((agenda . 5)
+;; 			    (projects . 5)
+;; 			    (bookmarks . 8)
+;; 			    (recents . 12))))
 
 
 (use-package evil-goggles
+  :after evil
   :config
   (setq evil-goggles-duration 0.1
         evil-goggles-pulse nil ; too slow

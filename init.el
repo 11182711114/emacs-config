@@ -1,52 +1,35 @@
-;;; init.el -*- lexical-binding: t; -*-
+;;; init.el --- My Emacs configuration, shamelessly stolen from various sources
 ;;; Commentary:
+;; My Emacs configuration, shamelessly stolen from various sources
 
+;; Following lines load an Org file and build the configuration code out of it.
 
 ;;; Code:
 
+(let ((gc-cons-threshold most-positive-fixnum))
 
-;; STARTUP
-;; increase gc limit to decrease startup time
-(defconst emacs-start-time (current-time))
-(setq gc-cons-threshold 402653184 gc-cons-percentage 0.6)
-;; start maximized
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+  ;; Set repositories
+  (require 'package)
+  (setq-default
+   load-prefer-newer t
+   package-enable-at-startup nil)
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+  (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+  (package-initialize)
 
-(defvar core-dir "~/.emacs.d/core/")
-(add-to-list 'load-path core-dir)
-(require 'core-init)
+  ;; Install dependencies
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package t))
+  (setq-default
+   use-package-always-defer t
+   use-package-always-ensure t)
 
-(use-package ivy
-  :config
-  (ivy-mode +1))
+  ;; Use latest Org
+  (use-package org :ensure org-plus-contrib)
 
+  ;; Tangle configuration
+  (org-babel-load-file (expand-file-name "emacsconfig.org" user-emacs-directory))
+  (garbage-collect))
 
-    ;; SOURCE CONTROL
-(use-package magit)
-(use-package magit-gitflow
-  :after magit)
-(use-package evil-magit
-  :after evil magit)
-(use-package forge
-  :after magit)
-(use-package gitignore-mode
-  :mode ("\\.gitignore\\'")
-  :ensure t)
-
-
-
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (gitignore-mode forge evil-magit magit-gitflow general which-key flycheck all-the-icons-ivy counsel-projectile counsel ivy evil-goggles dashboard treemacs-projectile treemacs-evil treemacs-magit with-editor winum use-package treemacs transient solaire-mode no-littering nlinum evil-commentary evil-collection evil-cleverparens evil-anzu doom-themes doom-modeline))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+;;; init.el ends here

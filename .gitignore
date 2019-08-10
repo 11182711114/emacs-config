@@ -10,3 +10,9 @@ transient
 recentf
 .*sqlite
 var/
+autosave
+.local/
+.projectile-bookmarks
+\#emacsconfig.org\#
+emacsconfig.el
+.custom.el
