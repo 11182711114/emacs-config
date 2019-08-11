@@ -16,3 +16,4 @@ autosave
 \#emacsconfig.org\#
 emacsconfig.el
 .custom.el
+straight/
