@@ -3,10 +3,17 @@
 
 * Table of Content                                                      :TOC:
 - [[#bootstrap][Bootstrap]]
+  - [[#core-packages][Core packages]]
+  - [[#keybinds][Keybinds]]
+  - [[#global-variables][Global variables]]
   - [[#use-better-defaults][Use better defaults]]
   - [[#load-customel][Load =.custom.el=]]
   - [[#load-secretel][Load =.secret.el=]]
-- [[#theme][Theme]]
+- [[#user-interface][User interface]]
+  - [[#theme][Theme]]
+  - [[#mode-line][Mode-Line]]
+  - [[#bars][Bars]]
+  - [[#misc][Misc]]
 - [[#languages][Languages]]
   - [[#css][CSS]]
   - [[#csv][CSV]]
@@ -14,6 +21,7 @@
   - [[#html][HTML]]
   - [[#javascript][JavaScript]]
   - [[#lisp][Lisp]]
+  - [[#elisp][Elisp]]
   - [[#markdown][Markdown]]
   - [[#org][Org]]
   - [[#python][Python]]
@@ -29,23 +37,22 @@
   - [[#diff][Diff]]
   - [[#dired][Dired]]
   - [[#expand][Expand]]
-  - [[#helm][Helm]]
-  - [[#helm-plugins][Helm Plugins]]
+  - [[#completion][Completion]]
   - [[#help][Help]]
   - [[#hydra][Hydra]]
   - [[#irc][IRC]]
   - [[#linters][Linters]]
-  - [[#mode-line][Mode-Line]]
   - [[#navigation][Navigation]]
-  - [[#os-specific][OS-Specific]]
   - [[#parentheses][Parentheses]]
   - [[#paste][Paste]]
-  - [[#point-and-region][Point and Region]]
   - [[#projectile][Projectile]]
   - [[#quality-of-life][Quality of Life]]
   - [[#shell-and-terminal][Shell and Terminal]]
   - [[#version-control][Version Control]]
   - [[#whitespaces][Whitespaces]]
+- [[#symbols][Symbols]]
+  - [[#symbols-1][Symbols]]
+  - [[#fira-code][Fira Code]]
 
 * Bootstrap
 
@@ -56,8 +63,32 @@
 (use-package async
     :defer t)
 
+(use-package undo-tree
+    :config
+    (setq undo-tree-auto-save-history nil ; disable because unstable
+        ;; undo-in-region is known to cause undo history corruption, which can
+        ;; be very destructive! Disabling it deters the error, but does not fix
+        ;; it entirely!
+        undo-tree-enable-undo-in-region nil
+        undo-tree-history-directory-alist
+        `(("." . ,(concat my/cache-dir "undo-tree-hist/"))))
+    (global-undo-tree-mode +1))
+
+(add-to-list 'load-path "~/.emacs.d/util/")
+(require 'core-util)
 #+END_SRC
 
+
+
+** Keybinds
+
+#+BEGIN_SRC emacs-lisp
+
+(use-package general)
+(defalias 'define-key! #'general-def)
+(defalias 'unmap! #'general-unbind)
+
+#+END_SRC
 
 ** Global variables
 
@@ -93,10 +124,10 @@ Some UI elements are rather invasive. No-mouse master race.
 
 #+BEGIN_SRC emacs-lisp
 (when window-system
-  (blink-cursor-mode 0)                           ; Disable the cursor blinking
-  (scroll-bar-mode 0)                             ; Disable the scroll bar
-  (tool-bar-mode 0)                               ; Disable the tool bar
-  (tooltip-mode 0))                               ; Disable the tooltips
+  (blink-cursor-mode -1)                           ; Disable the cursor blinking
+  (scroll-bar-mode -1)                             ; Disable the scroll bar
+  (tool-bar-mode -1)                               ; Disable the tool bar
+  (tooltip-mode -1))                               ; Disable the tooltips
 #+END_SRC
 
 Here are what I consider better defaults as per my own experience.
@@ -117,8 +148,6 @@ Here are what I consider better defaults as per my own experience.
     mouse-yank-at-point t                            ; Yank at point rather than pointer
     ns-use-srgb-colorspace nil                       ; Don't use sRGB colors
     recenter-positions '(5 top bottom)               ; Set re-centering positions
-    scroll-conservatively most-positive-fixnum       ; Always scroll by one line
-    scroll-margin 10                                 ; Add a margin when scrolling vertically
     select-enable-clipboard t                        ; Merge system's and Emacs' clipboard
     sentence-end-double-space nil                    ; End a sentence after a dot and a space
     show-trailing-whitespace nil                     ; Display trailing whitespaces
@@ -127,7 +156,15 @@ Here are what I consider better defaults as per my own experience.
     tab-width 4                                      ; Set width for tabs
     uniquify-buffer-name-style 'forward              ; Uniquify buffer names
     window-combination-resize t                      ; Resize windows proportionally
-    x-stretch-cursor t                               ; Stretch cursor to the glyph width
+    x-stretch-cursor t                               ; Stretch cursor to the glyph width   
+    ;; Scrolling
+    hscroll-margin 2
+    hscroll-step 1
+    scroll-conservatively 1001
+    scroll-margin 0
+    scroll-preserve-screen-position t
+    mouse-wheel-scroll-amount '(5 ((shift) . 2))
+    mouse-wheel-progressive-speed nil ; don't accelerate scrolling
     ;; Dont litter .emacs.d/  
     abbrev-file-name             (concat my/local-dir "abbrev.el")
     async-byte-compile-log-file  (concat my/etc-dir "async-bytecomp.log")
@@ -165,9 +202,6 @@ Here are what I consider better defaults as per my own experience.
 Enable fullscreen.
 
 #+BEGIN_SRC emacs-lisp
-;; (if (eq window-system 'ns)
-;;     (toggle-frame-maximized)
-;;   (toggle-frame-fullscreen))
 (toggle-frame-maximized)
 #+END_SRC
 
@@ -228,7 +262,6 @@ Load theme
 #+BEGIN_SRC emacs-lisp
 (use-package doom-themes
     :demand t
-    :init (global-display-line-numbers-mode)
     :custom
     (doom-themes-enable-bold t)
     (doom-themes-enable-italic t)
@@ -289,15 +322,20 @@ Mode line
 Modeline for magit
 
 #+BEGIN_SRC emacs-lisp
-(defun +modeline|hide-in-non-status-buffer ()
+(use-package hide-mode-line 
+  :config      
+  (defun +modeline|hide-in-non-status-buffer ()
 "Show minimal modeline in magit-status buffer, no modeline elsewhere."
-(if (eq major-mode 'magit-status-mode)
-    (doom-modeline-set-project-modeline)
-    (hide-mode-line-mode)))
-(add-hook 'magit-mode-hook #'+modeline|hide-in-non-status-buffer)
+  (if (eq major-mode 'magit-status-mode)
+      (doom-modeline-set-project-modeline)
+      (hide-mode-line-mode))))
+;; (add-hook 'magit-mode-hook #'+modeline|hide-in-non-status-buffer)
+      ;; (magit-mode . #'+modeline|hide-in-non-status-buffer))
 #+END_SRC
 
-** Sidebar
+** Bars
+
+*** Sidebar
 
 For when you need to go explorin'
 
@@ -306,7 +344,7 @@ For when you need to go explorin'
     :defer t
     :custom
     (treemacs-follow-after-init t)
-    ;; (treemacs-is-never-other-window t)
+    (treemacs-is-never-other-window t)
     (treemacs-sorting 'alphabetic-case-insensitive-desc)
     (treemacs-persist-file (concat my/cache-dir "treemacs-persist"))
     (treemacs-last-error-persist-file (concat my/cache-dir "treemacs-last-error-persist"))
@@ -326,11 +364,31 @@ For when you need to go explorin'
     :after (treemacs projectile)
     :defer t)
 
-;; (use-package treemacs-magit
-;;     :requires (treemacs evil)    
-;;     :after (treemacs magit)
-;;     :defer t)
+(use-package treemacs-magit
+    :requires (treemacs evil)    
+    :after (treemacs magit)
+    :defer t)
 #+END_SRC
+
+*** Tabs
+
+
+#+BEGIN_SRC emacs-lisp
+
+(use-package centaur-tabs
+    :bind
+    (:map evil-normal-state-map
+            ("g t" . centaur-tabs-forward)
+            ("g T" . centaur-tabs-backward))
+    :config
+    ((setq centaur-tabs-set-icons t)
+    (setq centaur-tabs-gray-out-icons 'buffer)
+    (setq centaur-tabs-set-bar 'over)
+    (setq centaur-tabs-set-modified-marker t))
+    (centaur-tabs-mode +1))
+
+#+END_SRC
+
 
 
 ** Misc
@@ -338,11 +396,18 @@ For when you need to go explorin'
 *** Linenumbers
 
 #+BEGIN_SRC emacs-lisp
-;; (use-package nlinum
-;;   :config  
-;;   (setq nlinum-highlight-current-line t))
-;; (global-hl-line-mode +1)
+(global-display-line-numbers-mode)
 #+END_SRC
+
+
+*** End of buffer
+
+#+BEGIN_SRC emacs-lisp
+(use-package vi-tilde-fringe
+    :config
+    (add-hook 'prog-mode-hook 'vi-tilde-fringe-mode))
+#+END_SRC
+
 
 * Languages
 
@@ -468,6 +533,7 @@ HTML mode is defined in =sgml-mode.el=.
 #+BEGIN_SRC
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
 
+
 #+END_SRC
 
 ** Markdown
@@ -528,8 +594,7 @@ authoring documents with a fast and effective plain-text system.
   :hook
   ((org-mode . me/org-set-ongoing-hydra-body)
    (org-mode . org-sticky-header-mode)
-   (org-mode . toc-org-enable)
-   (org-mode . prettify-symbols-mode))
+   (org-mode . toc-org-enable))
   :custom
   (org-descriptive-links nil)
   (org-edit-src-content-indentation 0)
@@ -907,113 +972,389 @@ under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
   (yas-reload-all))
 #+END_SRC
 
-** Helm
+** Completion
 
-Helm is a beast. Although heavily, it replaces =ido-mode= in many ways.
+*** Ivy
 
-#+BEGIN_QUOTE
-=Helm= is an Emacs framework for incremental completions and narrowing
-selections. It helps to rapidly complete file names, buffer names, or any other
-Emacs interactions requiring selecting an item from a list of possible choices.
-
-Helm is a fork of =anything.el=, which was originally written by Tamas Patrovic
-and can be considered to be its successor. =Helm= cleans the legacy code that is
-leaner, modular, and unchained from constraints of backward compatibility.
-
-[[https://github.com/emacs-helm/helm][Bozhidar Batsov]]
-#+END_QUOTE
-
-
-- *TODO*: Hide the buffer size column.
-- *TODO*: Test =me/helm-pulse-follow= on MacOS. Is it Windows that makes it ugly?
-- *TOFIX*: Help buffer resizes the frame.
-- *TOFIX*: The recentering is too aggressive.
-- *TOFIX*: Fix =me/helm-grab-candidates=.
 
 #+BEGIN_SRC emacs-lisp
-(use-package helm
-  :preface
-  (defun me/helm-focus-follow ()
-    ;; (let ((point (point)))
-    ;;   (when (and (pulse-available-p) (> point 1))
-    ;;     (pulse-momentary-highlight-one-line point)))
-    (recenter-top-bottom (car recenter-positions)))
-  (defun me/helm-grab-candidates (beg end)
-    (interactive "r")
-    (if (region-active-p)
-        (kill-ring-save beg end)
-      (with-helm-buffer (kill-ring-save (point-min) (point-max)))))
-  :bind
-  (([remap execute-extended-command] . helm-M-x)
-   ([remap find-file] . helm-find-files)
-   ([remap isearch-forward] . helm-occur)
-   ([remap switch-to-buffer] . helm-buffers-list)
-   :map helm-map
-   ("<left>" . backward-char)
-   ("<right>" . forward-char)
-   ("M-w" . me/helm-grab-candidates))
-  :hook
-  (after-init . helm-mode)
-  (helm-after-action . me/helm-focus-follow)
-  :custom
-  (helm-M-x-fuzzy-match t)
-  (helm-always-two-windows t)
-  (helm-buffer-max-length nil)
-  (helm-buffers-fuzzy-matching t)
-  (helm-completion-in-region-fuzzy-match t)
-  (helm-display-header-line nil)
-  (helm-ff-no-preselect t)
-  (helm-ff-skip-boring-files t)
-  (helm-find-file-ignore-thing-at-point t)
-  (helm-help-full-frame nil)
-  (helm-mode-fuzzy-match t)
-  (helm-net-prefer-curl (if (executable-find "curl") t nil))
-  (helm-org-headings-fontify t)
-  (helm-scroll-amount 5)
-  (helm-split-window-default-side 'below)
-  (helm-truncate-lines t))
+(use-package ivy
+    :defer t
+    :init
+    (setq ivy-re-builders-alist
+        '((counsel-ag . ivy--regex-plus)
+        (counsel-rg . ivy--regex-plus)
+        (counsel-grep . ivy--regex-plus)
+        (swiper . ivy--regex-plus)
+        (swiper-isearch . ivy--regex-plus)
+        ;; Ignore order for non-fuzzy searches by default
+        (t . ivy--regex-ignore-order)))
+    :config
+    (setq ivy-height 15
+        ivy-wrap t
+        ivy-fixed-height-minibuffer t
+        projectile-completion-system 'ivy
+        ;; Don't use ^ as initial input
+        ivy-initial-inputs-alist nil
+        ;; highlight til EOL
+        ivy-format-function #'ivy-format-function-line
+        ;; disable magic slash on non-match
+        ivy-magic-slash-non-match-action nil
+        ;; don't show recent files in switch-buffer
+        ivy-use-virtual-buffers nil
+        ;; ...but if that ever changes, show their full path
+        ivy-virtual-abbreviate 'full
+        ;; don't quit minibuffer on delete-error
+        ivy-on-del-error-function nil
+        ;; enable ability to select prompt (alternative to `ivy-immediate-done')
+        ivy-use-selectable-prompt t)
+
+  ;; Ensure a jump point is registered before jumping to new locations with ivy
+    (defvar +ivy--origin nil)
+
+    (defun +ivy|record-position-maybe ()
+        (with-ivy-window
+        (setq +ivy--origin (point-marker))))
+    (setq ivy-hooks-alist '((t . +ivy|record-position-maybe)))
+
+    (defun +ivy|set-jump-point-maybe ()
+        (when (and (markerp +ivy--origin)
+                (not (equal (with-ivy-window (point-marker)) +ivy--origin)))
+        (with-current-buffer (marker-buffer +ivy--origin)
+            (better-jumper-set-jump +ivy--origin)))
+        (setq +ivy--origin nil))
+    (add-hook 'minibuffer-exit-hook #'+ivy|set-jump-point-maybe)
+
+    (with-eval-after-load 'yasnippet
+        (add-to-list 'yas-prompt-functions #'+ivy-yas-prompt nil #'eq))
+
+    (defun +ivy*inhibit-ivy-in-evil-ex (orig-fn &rest args)
+        "`ivy-completion-in-region' struggles with completing certain
+    evil-ex-specific constructs, so we disable it solely in evil-ex."
+        (let ((completion-in-region-function #'completion--in-region))
+        (apply orig-fn args)))
+    (advice-add #'evil-ex :around #'+ivy*inhibit-ivy-in-evil-ex)
+
+    (define-key! ivy-mode-map
+        [remap switch-to-buffer]              #'+ivy/switch-buffer
+        [remap switch-to-buffer-other-window] #'+ivy/switch-buffer-other-window
+        [remap persp-switch-to-buffer]        #'+ivy/switch-workspace-buffer)
+
+    (define-key ivy-minibuffer-map (kbd "C-c C-e") #'+ivy/woccur)
+
+    (ivy-mode +1)
+
+    (use-package ivy-hydra
+        :commands (ivy-dispatching-done-hydra ivy--matcher-desc ivy-hydra/body)
+        :init
+        (define-key! ivy-minibuffer-map
+        "C-o" #'ivy-dispatching-done-hydra
+        "M-o" #'hydra-ivy/body)
+        :config
+        ;; ivy-hydra rebinds this, so we have to do so again
+        (define-key ivy-minibuffer-map (kbd "M-o") #'hydra-ivy/body)))
+
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
-(use-package helm-imenu
-  :ensure nil
-  :bind
-  (:map helm-imenu-map
-        ("<left>" . backward-char)
-        ("<right>" . forward-char)))
+(use-package amx
+    :config
+    (setq amx-save-file (concat my/cache-dir "amx-items")))
 #+END_SRC
 
-** Helm Plugins
-
-Fourth-party packages for Helm.
-
 #+BEGIN_SRC emacs-lisp
-(use-package helm-ag
-  :bind
-  (:map helm-ag-map
-        ("<left>" . backward-char)
-        ("<right>" . forward-char))
-  :custom
-  (helm-ag-show-status-function nil))
-
-(use-package helm-descbinds
-  :bind
-  ([remap describe-bindings] . helm-descbinds)
-  :custom
-  (helm-descbinds-window-style 'split-window))
-
-(use-package helm-describe-modes
-  :bind ([remap describe-mode] . helm-describe-modes))
-
-(use-package helm-projectile
-  :defer nil
-  :bind
-  (:map helm-projectile-find-file-map
-        ("<left>" . backward-char)
-        ("<right>" . forward-char))
+(use-package counsel
+  :commands counsel-describe-face
+  :init
+  (map! [remap apropos]                  #'counsel-apropos
+        [remap bookmark-jump]            #'counsel-bookmark
+        [remap describe-face]            #'counsel-faces
+        [remap describe-function]        #'counsel-describe-function
+        [remap describe-variable]        #'counsel-describe-variable
+        [remap describe-bindings]        #'counsel-descbinds
+        [remap set-variable]             #'counsel-set-variable
+        [remap execute-extended-command] #'counsel-M-x
+        [remap find-file]                #'counsel-find-file
+        [remap find-library]             #'counsel-find-library
+        [remap info-lookup-symbol]       #'counsel-info-lookup-symbol
+        [remap imenu]                    #'counsel-imenu
+        [remap recentf-open-files]       #'counsel-recentf
+        [remap org-capture]              #'counsel-org-capture
+        [remap swiper]                   #'counsel-grep-or-swiper
+        [remap evil-ex-registers]        #'counsel-evil-registers
+        [remap yank-pop]                 #'counsel-yank-pop)
   :config
-  (helm-projectile-toggle 1))
+;;   (set-popup-rule! "^\\*ivy-occur" :size 0.35 :ttl 0 :quit nil)
+
+  (setq counsel-find-file-ignore-regexp "\\(?:^[#.]\\)\\|\\(?:[#~]$\\)\\|\\(?:^Icon?\\)"
+        counsel-describe-function-function #'helpful-callable
+        counsel-describe-variable-function #'helpful-variable
+        ;; Add smart-casing (-S) to default command arguments:
+        counsel-rg-base-command "rg -S --no-heading --line-number --color never %s ."
+        counsel-ag-base-command "ag -S --nocolor --nogroup %s"
+        counsel-pt-base-command "pt -S --nocolor --nogroup -e %s")
+
+  (add-to-list 'swiper-font-lock-exclude #'+doom-dashboard-mode nil #'eq)
+
+  ;; Record in jumplist when opening files via counsel-{ag,rg,pt,git-grep}
+  (add-hook 'counsel-grep-post-action-hook #'better-jumper-set-jump)
+
+  ;; Factories
+  (defun +ivy-action-reloading (cmd)
+    (lambda (x)
+      (funcall cmd x)
+      (ivy--reset-state ivy-last)))
+
+  (defun +ivy-action-given-file (cmd prompt)
+    (lambda (source)
+      (let* ((enable-recursive-minibuffers t)
+             (target (read-file-name (format "%s %s to:" prompt source))))
+        (funcall cmd source target 1))))
+
+  ;; Configure `counsel-find-file'
+  (ivy-add-actions
+   'counsel-find-file
+   `(("b" counsel-find-file-cd-bookmark-action "cd bookmark")
+     ("s" counsel-find-file-as-root "open as root")
+     ("m" counsel-find-file-mkdir-action "mkdir")
+     ("c" ,(+ivy-action-given-file #'copy-file "Copy file") "copy file")
+     ("d" ,(+ivy-action-reloading #'+ivy-confirm-delete-file) "delete")
+     ("r" (lambda (path) (rename-file path (read-string "New name: "))) "rename")
+     ("R" ,(+ivy-action-reloading (+ivy-action-given-file #'rename-file "Move")) "move")
+     ("f" find-file-other-window "other window")
+     ("F" find-file-other-frame "other frame")
+     ("p" (lambda (path) (with-ivy-window (insert (file-relative-name path default-directory)))) "insert relative path")
+     ("P" (lambda (path) (with-ivy-window (insert path))) "insert absolute path")
+     ("l" (lambda (path) "Insert org-link with relative path"
+            (with-ivy-window (insert (format "[[./%s]]" (file-relative-name path default-directory))))) "insert org-link (rel. path)")
+     ("L" (lambda (path) "Insert org-link with absolute path"
+            (with-ivy-window (insert (format "[[%s]]" path)))) "insert org-link (abs. path)")))
+
+  (ivy-add-actions
+   'counsel-ag ; also applies to `counsel-rg' & `counsel-pt'
+   '(("O" +ivy-git-grep-other-window-action "open in other window"))))
 #+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package counsel-projectile
+  :defer t
+  :init
+  (map! [remap projectile-find-file]        #'+ivy/projectile-find-file
+        [remap projectile-find-dir]         #'counsel-projectile-find-dir
+        [remap projectile-switch-to-buffer] #'counsel-projectile-switch-to-buffer
+        [remap projectile-grep]             #'counsel-projectile-grep
+        [remap projectile-ag]               #'counsel-projectile-ag
+        [remap projectile-switch-project]   #'counsel-projectile-switch-project)
+  :config
+  ;; no highlighting visited files; slows down the filtering
+  (ivy-set-display-transformer #'counsel-projectile-find-file nil))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package swiper)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package ivy-hydra)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package ivy-prescient
+  :hook (ivy-mode . ivy-prescient-mode)
+  :init
+  (setq prescient-filter-method '(literal regexp initialism)
+        ;; (if (featurep! +fuzzy)
+        ;;     '(literal regexp initialism fuzzy)
+        ;;   '(literal regexp initialism))
+        ivy-prescient-enable-filtering t  ; we do this ourselves
+        ivy-prescient-retain-classic-highlighting t
+        ivy-initial-inputs-alist nil
+        ivy-re-builders-alist
+        '((counsel-ag . +ivy-prescient-non-fuzzy)
+          (counsel-rg . +ivy-prescient-non-fuzzy)
+          (counsel-grep . +ivy-prescient-non-fuzzy)
+          (swiper . +ivy-prescient-non-fuzzy)
+          (swiper-isearch . +ivy-prescient-non-fuzzy)
+          (t . ivy-prescient-re-builder)))
+
+  :config
+  (defun +ivy-prescient-non-fuzzy (str)
+    (let ((prescient-filter-method '(literal regexp)))
+      (ivy-prescient-re-builder str)))
+
+  ;; NOTE prescient config duplicated with `company'
+  (setq prescient-save-file (concat my/cache-dir "prescient-save.el"))
+  (prescient-persist-mode +1))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package ivy-rich
+    :after ivy
+    :config  
+    (cl-pushnew '(+ivy-rich-buffer-icon)
+        (cadr (plist-get ivy-rich-display-transformers-list
+                'ivy-switch-buffer)))
+
+  ;; Include variable value in `counsel-describe-variable'
+    (setq ivy-rich-display-transformers-list
+        (plist-put ivy-rich-display-transformers-list
+                    'counsel-describe-variable
+                    '(:columns
+                        ((counsel-describe-variable-transformer (:width 40)) ; the original transformer
+                        (+ivy-rich-describe-variable-transformer (:width 50))
+                        (ivy-rich-counsel-variable-docstring (:face font-lock-doc-face))))))
+
+    ;; Remove built-in coloring of buffer list; we do our own
+    (setq ivy-switch-buffer-faces-alist nil)
+    (ivy-set-display-transformer 'internal-complete-buffer nil)
+
+    ;; Highlight buffers differently based on whether they're in the same project
+    ;; as the current project or not.
+    (let* ((plist (plist-get ivy-rich-display-transformers-list 'ivy-switch-buffer))
+            (switch-buffer-alist (assq 'ivy-rich-candidate (plist-get plist :columns))))
+    (when switch-buffer-alist
+        (setcar switch-buffer-alist '+ivy-rich-buffer-name)))
+
+    ;; Apply switch buffer transformers to `counsel-projectile-switch-to-buffer' as well
+    (setq ivy-rich-display-transformers-list
+        (plist-put ivy-rich-display-transformers-list
+                    'counsel-projectile-switch-to-buffer
+                    (plist-get ivy-rich-display-transformers-list 'ivy-switch-buffer)))
+
+    ;; Reload ivy which so changes to `ivy-rich-display-transformers-list' work
+    (ivy-rich-mode +1))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package wgrep
+  :commands wgrep-change-to-wgrep-mode
+  :config (setq wgrep-auto-save-buffer t))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package all-the-icons-ivy
+  :after ivy
+  :config
+  ;; `all-the-icons-ivy' is incompatible with ivy-rich's switch-buffer
+  ;; modifications, so we disable them and merge them ourselves
+  (setq all-the-icons-ivy-buffer-commands nil)
+
+  (all-the-icons-ivy-setup)
+  (with-eval-after-load 'counsel-projectile
+    (let ((all-the-icons-ivy-file-commands '(counsel-projectile
+                                             counsel-projectile-find-file
+                                             counsel-projectile-find-dir)))
+      (all-the-icons-ivy-setup))))
+#+END_SRC
+
+
+*** Helm
+
+;; Helm is a beast. Although heavily, it replaces =ido-mode= in many ways.
+
+;; #+BEGIN_QUOTE
+;; =Helm= is an Emacs framework for incremental completions and narrowing
+;; selections. It helps to rapidly complete file names, buffer names, or any other
+;; Emacs interactions requiring selecting an item from a list of possible choices.
+
+;; Helm is a fork of =anything.el=, which was originally written by Tamas Patrovic
+;; and can be considered to be its successor. =Helm= cleans the legacy code that is
+;; leaner, modular, and unchained from constraints of backward compatibility.
+
+;; [[https://github.com/emacs-helm/helm][Bozhidar Batsov]]
+;; #+END_QUOTE
+
+
+;; - *TODO*: Hide the buffer size column.
+;; - *TODO*: Test =me/helm-pulse-follow= on MacOS. Is it Windows that makes it ugly?
+;; - *TOFIX*: Help buffer resizes the frame.
+;; - *TOFIX*: The recentering is too aggressive.
+;; - *TOFIX*: Fix =me/helm-grab-candidates=.
+
+;; #+BEGIN_SRC emacs-lisp
+;; (use-package helm
+;;   :preface
+;;   (defun me/helm-focus-follow ()
+;;     ;; (let ((point (point)))
+;;     ;;   (when (and (pulse-available-p) (> point 1))
+;;     ;;     (pulse-momentary-highlight-one-line point)))
+;;     (recenter-top-bottom (car recenter-positions)))
+;;   (defun me/helm-grab-candidates (beg end)
+;;     (interactive "r")
+;;     (if (region-active-p)
+;;         (kill-ring-save beg end)
+;;       (with-helm-buffer (kill-ring-save (point-min) (point-max)))))
+;;   :bind
+;;   (([remap execute-extended-command] . helm-M-x)
+;;    ([remap find-file] . helm-find-files)
+;;    ([remap isearch-forward] . helm-occur)
+;;    ([remap switch-to-buffer] . helm-buffers-list)
+;;    :map helm-map
+;;    ("<left>" . backward-char)
+;;    ("<right>" . forward-char)
+;;    ("M-w" . me/helm-grab-candidates))
+;;   :hook
+;;   (after-init . helm-mode)
+;;   (helm-after-action . me/helm-focus-follow)
+;;   :custom
+;;   (helm-M-x-fuzzy-match t)
+;;   (helm-always-two-windows t)
+;;   (helm-buffer-max-length nil)
+;;   (helm-buffers-fuzzy-matching t)
+;;   (helm-completion-in-region-fuzzy-match t)
+;;   (helm-display-header-line nil)
+;;   (helm-ff-no-preselect t)
+;;   (helm-ff-skip-boring-files t)
+;;   (helm-find-file-ignore-thing-at-point t)
+;;   (helm-help-full-frame nil)
+;;   (helm-mode-fuzzy-match t)
+;;   (helm-net-prefer-curl (if (executable-find "curl") t nil))
+;;   (helm-org-headings-fontify t)
+;;   (helm-scroll-amount 5)
+;;   (helm-split-window-default-side 'below)
+;;   (helm-truncate-lines t))
+;; #+END_SRC
+
+;; #+BEGIN_SRC emacs-lisp
+;; (use-package helm-imenu
+;;   :ensure nil
+;;   :bind
+;;   (:map helm-imenu-map
+;;         ("<left>" . backward-char)
+;;         ("<right>" . forward-char)))
+;; #+END_SRC
+
+;; ** Helm Plugins
+
+;; Fourth-party packages for Helm.
+
+;; #+BEGIN_SRC emacs-lisp
+;; (use-package helm-ag
+;;   :bind
+;;   (:map helm-ag-map
+;;         ("<left>" . backward-char)
+;;         ("<right>" . forward-char))
+;;   :custom
+;;   (helm-ag-show-status-function nil))
+
+;; (use-package helm-descbinds
+;;   :bind
+;;   ([remap describe-bindings] . helm-descbinds)
+;;   :custom
+;;   (helm-descbinds-window-style 'split-window))
+
+;; (use-package helm-describe-modes
+;;   :bind ([remap describe-mode] . helm-describe-modes))
+
+;; (use-package helm-projectile
+;;   :defer nil
+;;   :bind
+;;   (:map helm-projectile-find-file-map
+;;         ("<left>" . backward-char)
+;;         ("<right>" . forward-char))
+;;   :config
+;;   (helm-projectile-toggle 1))
+;; #+END_SRC
 
 ** Help
 
@@ -1918,6 +2259,7 @@ Git itself deserve to be called porcelains.
 
 Highlight space-like characters, eg. trailing spaces, tabs, empty lines.
 
+
 #+BEGIN_SRC emacs-lisp
 (use-package whitespace
   :ensure nil
@@ -1929,10 +2271,16 @@ Highlight space-like characters, eg. trailing spaces, tabs, empty lines.
 #+END_SRC
 
 
+Delete on save
 
-
-
-
+#+BEGIN_SRC emacs-lisp
+(use-package ws-butler
+    :config
+    (setq ws-butler-global-exempt-modes
+            (append ws-butler-global-exempt-modes
+                    '(special-mode comint-mode term-mode eshell-mode)))
+    (ws-butler-global-mode))
+#+END_SRC
 
 
 
@@ -1995,7 +2343,11 @@ correct width of the symbols instead of the width measured by `char-width'."
       (setq acc (cons #X00a0 (cons '(Br . Bl) acc))
             len (1- len)))
     (cons (car ligature-alist) acc)))
-
+(defun doom-enlist (exp)
+  "Return EXP wrapped in a list, or as-is if already a list."
+  (declare (pure t) (side-effect-free t))
+  (if (listp exp) exp (list exp)))
+  
 (defun set-pretty-symbols! (modes &rest plist)
   "Associates string patterns with icons in certain major-modes.
 
@@ -2043,130 +2395,179 @@ Pretty symbols can be unset for emacs-lisp-mode with:
           (delq (assq mode +pretty-code-symbols-alist)
                 +pretty-code-symbols-alist))
         (push (cons mode results) +pretty-code-symbols-alist)))))
+(global-prettify-symbols-mode 1)
+
+(defvar +pretty-code-enabled-modes t
+    "List of major modes in which `prettify-symbols-mode' should be enabled.
+If t, enable it everywhere. If the first element is 'not, enable it in any mode
+besides what is listed.")
+
+;; When you get to the right edge, it goes back to how it normally prints
+(setq prettify-symbols-unprettify-at-point 'right-edge)
+
+(defun +pretty-code|init-pretty-symbols ()
+  "Enable `prettify-symbols-mode'.
+
+If in fundamental-mode, or a mode derived from special, comint, eshell or term
+modes, this function does nothing.
+
+Otherwise it builds `prettify-code-symbols-alist' according to
+`+pretty-code-symbols-alist' for the current major-mode."
+  (unless (or (eq major-mode 'fundamental-mode)
+              (eq (get major-mode 'mode-class) 'special)
+              (derived-mode-p 'comint-mode 'eshell-mode 'term-mode))
+    (when (or (eq +pretty-code-enabled-modes t)
+              (if (eq (car +pretty-code-enabled-modes) 'not)
+                  (not (memq major-mode (cdr +pretty-code-enabled-modes)))
+                (memq major-mode +pretty-code-enabled-modes)))
+      (setq prettify-symbols-alist
+            (append (cdr (assq major-mode +pretty-code-symbols-alist))
+                    (default-value 'prettify-symbols-alist)))
+      (when prettify-symbols-mode
+        (prettify-symbols-mode -1))
+      (prettify-symbols-mode +1))))
+
+(add-hook 'after-change-major-mode-hook #'+pretty-code|init-pretty-symbols)
 #+END_SRC
 
 
 ** Fira Code
+
+Fixing ligatures from fira code
+
 #+BEGIN_SRC emacs-lisp
-(defvar +pretty-code-fira-code-font-ligatures
-  '(("www"         . #Xe100)
-    ("**"          . #Xe101)
-    ("***"         . #Xe102)
-    ("**/"         . #Xe103)
-    ("*>"          . #Xe104)
-    ("*/"          . #Xe105)
-    ("\\\\"        . #Xe106)
-    ("\\\\\\"      . #Xe107)
-    ("{-"          . #Xe108)
-    ("[]"          . #Xe109)
-    ("::"          . #Xe10a)
-    (":::"         . #Xe10b)
-    (":="          . #Xe10c)
-    ("!!"          . #Xe10d)
-    ("!="          . #Xe10e)
-    ("!=="         . #Xe10f)
-    ("-}"          . #Xe110)
-    ("--"          . #Xe111)
-    ("---"         . #Xe112)
-    ("-->"         . #Xe113)
-    ("->"          . #Xe114)
-    ("->>"         . #Xe115)
-    ("-<"          . #Xe116)
-    ("-<<"         . #Xe117)
-    ("-~"          . #Xe118)
-    ("#{"          . #Xe119)
-    ("#["          . #Xe11a)
-    ("##"          . #Xe11b)
-    ("###"         . #Xe11c)
-    ("####"        . #Xe11d)
-    ("#("          . #Xe11e)
-    ("#?"          . #Xe11f)
-    ("#_"          . #Xe120)
-    ("#_("         . #Xe121)
-    (".-"          . #Xe122)
-    (".="          . #Xe123)
-    (".."          . #Xe124)
-    ("..<"         . #Xe125)
-    ("..."         . #Xe126)
-    ("?="          . #Xe127)
-    ("??"          . #Xe128)
-    (";;"          . #Xe129)
-    ("/*"          . #Xe12a)
-    ("/**"         . #Xe12b)
-    ("/="          . #Xe12c)
-    ("/=="         . #Xe12d)
-    ("/>"          . #Xe12e)
-    ("//"          . #Xe12f)
-    ("///"         . #Xe130)
-    ("&&"          . #Xe131)
-    ("||"          . #Xe132)
-    ("||="         . #Xe133)
-    ("|="          . #Xe134)
-    ("|>"          . #Xe135)
-    ("^="          . #Xe136)
-    ("$>"          . #Xe137)
-    ("++"          . #Xe138)
-    ("+++"         . #Xe139)
-    ("+>"          . #Xe13a)
-    ("=:="         . #Xe13b)
-    ("=="          . #Xe13c)
-    ("==="         . #Xe13d)
-    ("==>"         . #Xe13e)
-    ("=>"          . #Xe13f)
-    ("=>>"         . #Xe140)
-    ("<="          . #Xe141)
-    ("=<<"         . #Xe142)
-    ("=/="         . #Xe143)
-    (">-"          . #Xe144)
-    (">="          . #Xe145)
-    (">=>"         . #Xe146)
-    (">>"          . #Xe147)
-    (">>-"         . #Xe148)
-    (">>="         . #Xe149)
-    (">>>"         . #Xe14a)
-    ("<*"          . #Xe14b)
-    ("<*>"         . #Xe14c)
-    ("<|"          . #Xe14d)
-    ("<|>"         . #Xe14e)
-    ("<$"          . #Xe14f)
-    ("<$>"         . #Xe150)
-    ("<!--"        . #Xe151)
-    ("<-"          . #Xe152)
-    ("<--"         . #Xe153)
-    ("<->"         . #Xe154)
-    ("<+"          . #Xe155)
-    ("<+>"         . #Xe156)
-    ("<="          . #Xe157)
-    ("<=="         . #Xe158)
-    ("<=>"         . #Xe159)
-    ("<=<"         . #Xe15a)
-    ("<>"          . #Xe15b)
-    ("<<"          . #Xe15c)
-    ("<<-"         . #Xe15d)
-    ("<<="         . #Xe15e)
-    ("<<<"         . #Xe15f)
-    ("<~"          . #Xe160)
-    ("<~~"         . #Xe161)
-    ("</"          . #Xe162)
-    ("</>"         . #Xe163)
-    ("~@"          . #Xe164)
-    ("~-"          . #Xe165)
-    ("~="          . #Xe166)
-    ("~>"          . #Xe167)
-    ("~~"          . #Xe168)
-    ("~~>"         . #Xe169)
-    ("%%"          . #Xe16a)))
+; Fira code
+;; This works when using emacs --daemon + emacsclient
+(add-hook 'after-make-frame-functions (lambda (frame) (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Symbol")))
+;; This works when using emacs without server/client
+(set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code Symbol")
+;; I haven't found one statement that makes both of the above situations work, so I use both for now
 
-(defun setup-fira-ligatures ()
-  (set-fontset-font t '(#Xe100 . #Xe16f) "Fira Code")
-  (setq-default prettify-symbols-alist
-                (append prettify-symbols-alist
-                        (mapcar #'+pretty-code--correct-symbol-bounds
-                                +pretty-code-fira-code-font-ligatures))))
+(defconst fira-code-font-lock-keywords-alist
+  (mapcar (lambda (regex-char-pair)
+            `(,(car regex-char-pair)
+              (0 (prog1 ()
+                   (compose-region (match-beginning 1)
+                                   (match-end 1)
+                                   ;; The first argument to concat is a string containing a literal tab
+                                   ,(concat "   " (list (decode-char 'ucs (cadr regex-char-pair)))))))))
+          '(("\\(www\\)"                   #Xe100)
+            ("[^/]\\(\\*\\*\\)[^/]"        #Xe101)
+            ("\\(\\*\\*\\*\\)"             #Xe102)
+            ("\\(\\*\\*/\\)"               #Xe103)
+            ("\\(\\*>\\)"                  #Xe104)
+            ("[^*]\\(\\*/\\)"              #Xe105)
+            ("\\(\\\\\\\\\\)"              #Xe106)
+            ("\\(\\\\\\\\\\\\\\)"          #Xe107)
+            ("\\({-\\)"                    #Xe108)
+            ("\\(\\[\\]\\)"                #Xe109)
+            ("\\(::\\)"                    #Xe10a)
+            ("\\(:::\\)"                   #Xe10b)
+            ("[^=]\\(:=\\)"                #Xe10c)
+            ("\\(!!\\)"                    #Xe10d)
+            ("\\(!=\\)"                    #Xe10e)
+            ("\\(!==\\)"                   #Xe10f)
+            ("\\(-}\\)"                    #Xe110)
+            ("\\(--\\)"                    #Xe111)
+            ("\\(---\\)"                   #Xe112)
+            ("\\(-->\\)"                   #Xe113)
+            ("[^-]\\(->\\)"                #Xe114)
+            ("\\(->>\\)"                   #Xe115)
+            ("\\(-<\\)"                    #Xe116)
+            ("\\(-<<\\)"                   #Xe117)
+            ("\\(-~\\)"                    #Xe118)
+            ("\\(#{\\)"                    #Xe119)
+            ("\\(#\\[\\)"                  #Xe11a)
+            ("\\(##\\)"                    #Xe11b)
+            ("\\(###\\)"                   #Xe11c)
+            ("\\(####\\)"                  #Xe11d)
+            ("\\(#(\\)"                    #Xe11e)
+            ("\\(#\\?\\)"                  #Xe11f)
+            ("\\(#_\\)"                    #Xe120)
+            ("\\(#_(\\)"                   #Xe121)
+            ("\\(\\.-\\)"                  #Xe122)
+            ("\\(\\.=\\)"                  #Xe123)
+            ("\\(\\.\\.\\)"                #Xe124)
+            ("\\(\\.\\.<\\)"               #Xe125)
+            ("\\(\\.\\.\\.\\)"             #Xe126)
+            ("\\(\\?=\\)"                  #Xe127)
+            ("\\(\\?\\?\\)"                #Xe128)
+            ("\\(;;\\)"                    #Xe129)
+            ("\\(/\\*\\)"                  #Xe12a)
+            ("\\(/\\*\\*\\)"               #Xe12b)
+            ("\\(/=\\)"                    #Xe12c)
+            ("\\(/==\\)"                   #Xe12d)
+            ("\\(/>\\)"                    #Xe12e)
+            ("\\(//\\)"                    #Xe12f)
+            ("\\(///\\)"                   #Xe130)
+            ("\\(&&\\)"                    #Xe131)
+            ("\\(||\\)"                    #Xe132)
+            ("\\(||=\\)"                   #Xe133)
+            ("[^|]\\(|=\\)"                #Xe134)
+            ("\\(|>\\)"                    #Xe135)
+            ("\\(\\^=\\)"                  #Xe136)
+            ("\\(\\$>\\)"                  #Xe137)
+            ("\\(\\+\\+\\)"                #Xe138)
+            ("\\(\\+\\+\\+\\)"             #Xe139)
+            ("\\(\\+>\\)"                  #Xe13a)
+            ("\\(=:=\\)"                   #Xe13b)
+            ("[^!/]\\(==\\)[^>]"           #Xe13c)
+            ("\\(===\\)"                   #Xe13d)
+            ("\\(==>\\)"                   #Xe13e)
+            ("[^=]\\(=>\\)"                #Xe13f)
+            ("\\(=>>\\)"                   #Xe140)
+            ("\\(<=\\)"                    #Xe141)
+            ("\\(=<<\\)"                   #Xe142)
+            ("\\(=/=\\)"                   #Xe143)
+            ("\\(>-\\)"                    #Xe144)
+            ("\\(>=\\)"                    #Xe145)
+            ("\\(>=>\\)"                   #Xe146)
+            ("[^-=]\\(>>\\)"               #Xe147)
+            ("\\(>>-\\)"                   #Xe148)
+            ("\\(>>=\\)"                   #Xe149)
+            ("\\(>>>\\)"                   #Xe14a)
+            ("\\(<\\*\\)"                  #Xe14b)
+            ("\\(<\\*>\\)"                 #Xe14c)
+            ("\\(<|\\)"                    #Xe14d)
+            ("\\(<|>\\)"                   #Xe14e)
+            ("\\(<\\$\\)"                  #Xe14f)
+            ("\\(<\\$>\\)"                 #Xe150)
+            ("\\(<!--\\)"                  #Xe151)
+            ("\\(<-\\)"                    #Xe152)
+            ("\\(<--\\)"                   #Xe153)
+            ("\\(<->\\)"                   #Xe154)
+            ("\\(<\\+\\)"                  #Xe155)
+            ("\\(<\\+>\\)"                 #Xe156)
+            ("\\(<=\\)"                    #Xe157)
+            ("\\(<==\\)"                   #Xe158)
+            ("\\(<=>\\)"                   #Xe159)
+            ("\\(<=<\\)"                   #Xe15a)
+            ("\\(<>\\)"                    #Xe15b)
+            ("[^-=]\\(<<\\)"               #Xe15c)
+            ("\\(<<-\\)"                   #Xe15d)
+            ("\\(<<=\\)"                   #Xe15e)
+            ("\\(<<<\\)"                   #Xe15f)
+            ("\\(<~\\)"                    #Xe160)
+            ("\\(<~~\\)"                   #Xe161)
+            ("\\(</\\)"                    #Xe162)
+            ("\\(</>\\)"                   #Xe163)
+            ("\\(~@\\)"                    #Xe164)
+            ("\\(~-\\)"                    #Xe165)
+            ("\\(~=\\)"                    #Xe166)
+            ("\\(~>\\)"                    #Xe167)
+            ("[^<]\\(~~\\)"                #Xe168)
+            ("\\(~~>\\)"                   #Xe169)
+            ("\\(%%\\)"                    #Xe16a)
+            ("[0\[]\\(x\\)"                #Xe16b)
+            ("[^:=]\\(:\\)[^:=]"           #Xe16c)
+            ("[^\\+<>]\\(\\+\\)[^\\+<>]"   #Xe16d)
+            ("[^\\*/<>]\\(\\*\\)[^\\*/<>]" #Xe16f))))
 
-;; (add-hook 'doom-init-ui-hook #'setup-fira-ligatures)
-(add-to-list 'default-frame-alist '(font . "Fira Code-10"))
-(add-hook 'org-mode 'setup-fira-ligatures)
+(defun add-fira-code-symbol-keywords ()
+  (font-lock-add-keywords nil fira-code-font-lock-keywords-alist))
+
+(add-hook 'prog-mode-hook
+          #'add-fira-code-symbol-keywords)
 #+END_SRC
 
 -----
