@@ -71,7 +71,7 @@
 Enable fullscreen.
 
 #+BEGIN_SRC emacs-lisp
-(toggle-frame-maximized)
+(add-hook 'after-init 'toggle-frame-fullscreen)
 #+END_SRC
 
 Some UI elements are rather invasive. No-mouse master race.
@@ -910,11 +910,14 @@ For when you need to go explorin'
 
 (use-package centaur-tabs
     :config
-    (setq centaur-tabs-set-icons t
-            centaur-tabs-gray-out-icons 'buffer
+    (setq centaur-tab-style "bar"
+            centaur-tabs-height 32
+            centaur-tabs-set-icons t
+            ;; centaur-tabs-gray-out-icons 'buffer
             centaur-tabs-set-bar 'over
             centaur-tabs-set-modified-marker t)
-    ;;(centaur-tabs-group-by-projectile-project)
+    (centaur-tabs-group-by-projectile-project)
+    (centaur-tabs-headline-match)
     :hook
     (prog-mode . centaur-tabs-local-mode)
     (dashboard-mode . centaur-tabs-local-mode)
@@ -2787,6 +2790,11 @@ Pretty symbols can be unset for emacs-lisp-mode with:
                 +pretty-code-symbols-alist))
         (push (cons mode results) +pretty-code-symbols-alist)))))
 (global-prettify-symbols-mode 1)
+
+(set-pretty-symbols! 'emacs-lisp-mode
+  :return "return"
+  :for "for"
+  :not "!")
 
 (defvar +pretty-code-enabled-modes t
     "List of major modes in which `prettify-symbols-mode' should be enabled.
