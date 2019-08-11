@@ -1,5 +1,21 @@
 ;;; core-util.el --- utility(macroes and etc)-*- lexical-binding: t; -*-
 
+
+(defun +evil*fix-dabbrev-in-minibuffer ()
+  "Make `try-expand-dabbrev' from `hippie-expand' work in minibuffer. See
+`he-dabbrev-beg', so we need to redefine syntax for '/'."
+  (set-syntax-table (let* ((table (make-syntax-table)))
+                      (modify-syntax-entry ?/ "." table)
+                      table)))
+
+
+(defmacro pushnew! (place &rest values)
+  "Like `cl-pushnew', but will prepend VALUES to PLACE.
+The order VALUES is preserved."
+  `(dolist (--value-- (nreverse (list ,@values)))
+     (cl-pushnew --value-- ,place)))
+
+
 ;;;###autoload
 (defun doom-fallback-buffer ()
   "Returns the fallback buffer, creating it if necessary. By default this is the
