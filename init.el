@@ -97,7 +97,8 @@
   ;;  use-package-always-ensure t)
 
   ;; Use latest Org
-  (use-package org)
+  (use-package org
+    :straight org-plus-contrib)
 
   ;; Tangle configuration
   (org-babel-load-file (expand-file-name "emacsconfig.org" user-emacs-directory))

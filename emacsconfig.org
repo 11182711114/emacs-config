@@ -111,7 +111,7 @@ Here are what I consider better defaults as per my own experience.
     tab-width 4                                      ; Set width for tabs
     uniquify-buffer-name-style 'forward              ; Uniquify buffer names
     window-combination-resize t                      ; Resize windows proportionally
-    x-stretch-cursor t                               ; Stretch cursor to the glyph width   
+    x-stretch-cursor t                               ; Stretch cursor to the glyph width
     idle-update-delay 1                              ; update ui slightly less often
     ;; no beeping or blinking please
     ring-bell-function #'ignore
@@ -138,7 +138,6 @@ Here are what I consider better defaults as per my own experience.
     )
 
 
-                               
 (cd "~/")                                         ; Move to the user directory
 (delete-selection-mode 1)                         ; Replace region when inserting text
 (display-time-mode 1)                             ; Enable time in the mode-line
@@ -148,7 +147,7 @@ Here are what I consider better defaults as per my own experience.
 (menu-bar-mode 0)                                 ; Disable the menu bar
 (mouse-avoidance-mode 'banish)                    ; Avoid collision of mouse with point
 (put 'downcase-region 'disabled nil)              ; Enable downcase-region
-(put 'upcase-region 'disabled nil)                ; Enable upcase-region  
+(put 'upcase-region 'disabled nil)                ; Enable upcase-region
 (blink-cursor-mode -1)                            ; Disable blinking cursor
 
 (when (fboundp 'set-charset-priority)             ; UTF-8 as the default coding system
@@ -701,7 +700,7 @@ more information on modifiers."
 
 #+BEGIN_SRC emacs-lisp
 
-(use-package evil-numbers 
+(use-package evil-numbers
   :after evil
   :straight (:host github :repo "janpath/evil-numbers"))
 
@@ -789,13 +788,14 @@ more information on modifiers."
 Load theme
 
 #+BEGIN_SRC emacs-lisp
+(defvar load-theme-hook '())
 (use-package doom-themes
     :demand t
     :custom
     (doom-themes-enable-bold t)
     (doom-themes-enable-italic t)
     :config
-    (load-theme 'doom-one t))
+    (load-theme 'doom-vibrant t))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -836,22 +836,27 @@ Mode line
     (find-file-visit-truename t)
     (doom-modeline-icon t)
     (doom-modeline-major-mode-icon t)
-    (projectile-dynamic-mode-line nil)
+    (projectile-dynamic-mode-line t)
     (doom-modeline-bar-width 3)
     (doom-modeline-github nil)
     (doom-modeline-mu4e nil)
     (doom-modeline-persp-name nil)
     (doom-modeline-minor-modes nil)
-    (doom-modeline-major-mode-icon nil)
     (doom-modeline-buffer-file-name-style 'relative-from-project)
-    :hook (after-init . doom-modeline-mode))
+    :hook
+    (after-init . doom-modeline-mode)
+    (theme-load . doom-modeline-mode)
+    (org-mode . doom-modeline-mode)
+    (theme-load . doom-modeline-refresh-bars)
+    (doom-modeline-mode . size-indication-mode) ; filesize in modeline
+    (doom-modeline-mode . column-number-mode)) ; cursor column in modeline
 #+END_SRC
 
 Modeline for magit
 
 #+BEGIN_SRC emacs-lisp
-(use-package hide-mode-line 
-  :config      
+(use-package hide-mode-line
+  :config
   (defun +modeline|hide-in-non-status-buffer ()
 "Show minimal modeline in magit-status buffer, no modeline elsewhere."
   (if (eq major-mode 'magit-status-mode)
@@ -876,12 +881,12 @@ For when you need to go explorin'
     (treemacs-sorting 'alphabetic-case-insensitive-desc)
     (treemacs-persist-file (concat my/cache-dir "treemacs-persist"))
     (treemacs-last-error-persist-file (concat my/cache-dir "treemacs-last-error-persist"))
-    (doom-themes-treemacs-theme "doom-colors") ; Colorful theme 
+    (doom-themes-treemacs-theme "doom-colors") ; Colorful theme
     :config
     (treemacs-follow-mode -1)
     (with-eval-after-load 'treemacs-persistence
-        (setq treemacs--last-error-persist-file 
-            (concat my/cache-dir 
+        (setq treemacs--last-error-persist-file
+            (concat my/cache-dir
             "treemacs-persist-at-last-error")))
     (doom-themes-treemacs-config))
 #+END_SRC
@@ -893,7 +898,7 @@ For when you need to go explorin'
     :defer t)
 
 (use-package treemacs-magit
-    :requires (treemacs evil)    
+    :requires (treemacs evil)
     :after (treemacs magit)
     :defer t)
 #+END_SRC
@@ -904,16 +909,25 @@ For when you need to go explorin'
 #+BEGIN_SRC emacs-lisp
 
 (use-package centaur-tabs
+    :config
+    (setq centaur-tabs-set-icons t
+            centaur-tabs-gray-out-icons 'buffer
+            centaur-tabs-set-bar 'over
+            centaur-tabs-set-modified-marker t)
+    ;;(centaur-tabs-group-by-projectile-project)
+    :hook
+    (prog-mode . centaur-tabs-local-mode)
+    (dashboard-mode . centaur-tabs-local-mode)
+    (term-mode . centaur-tabs-local-mode)
+    (calendar-mode . centaur-tabs-local-mode)
+    (org-agenda-mode . centaur-tabs-local-mode)
+    (helpful-mode . centaur-tabs-local-mode)
+    :config
+    (centaur-tabs-mode t)
     :bind
     (:map evil-normal-state-map
             ("g t" . centaur-tabs-forward)
-            ("g T" . centaur-tabs-backward))
-    :config
-    ((setq centaur-tabs-set-icons t)
-    (setq centaur-tabs-gray-out-icons 'buffer)
-    (setq centaur-tabs-set-bar 'over)
-    (setq centaur-tabs-set-modified-marker t))
-    (centaur-tabs-mode +1))
+            ("g T" . centaur-tabs-backward)))
 
 #+END_SRC
 
@@ -924,7 +938,9 @@ For when you need to go explorin'
 *** Linenumbers
 
 #+BEGIN_SRC emacs-lisp
-(global-display-line-numbers-mode)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+(add-hook 'org-mode-hook 'display-line-numbers-mode)
+(add-hook 'fundamental-mode-hook 'display-line-numbers-mode)
 #+END_SRC
 
 
@@ -1038,7 +1054,7 @@ HTML mode is defined in =sgml-mode.el=.
 ;;     :custom
 ;;     (tide-completion-detailed t)
 ;;     (tide-always-show-documentation t)
-;;     :hook 
+;;     :hook
 ;;     (typescript-mode . tide))
 
 (use-package web-mode
@@ -1054,7 +1070,7 @@ HTML mode is defined in =sgml-mode.el=.
 
 ** Elisp
 
-#+BEGIN_SRC
+#+BEGIN_SRC emacs-lisp
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
 
 
@@ -1677,7 +1693,7 @@ under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
 #+BEGIN_SRC emacs-lisp
 (use-package ivy-rich
     :after ivy
-    :config  
+    :config
     (cl-pushnew '(+ivy-rich-buffer-icon)
         (cadr (plist-get ivy-rich-display-transformers-list
                 'ivy-switch-buffer)))
@@ -2722,7 +2738,7 @@ correct width of the symbols instead of the width measured by `char-width'."
   "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
   (if (listp exp) exp (list exp)))
-  
+
 (defun set-pretty-symbols! (modes &rest plist)
   "Associates string patterns with icons in certain major-modes.
 
