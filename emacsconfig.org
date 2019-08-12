@@ -10,7 +10,9 @@
   - [[#core-packages][Core packages]]
   - [[#keybinds][Keybinds]]
 - [[#evil][Evil]]
-  - [[#general-evil][General Evil]]
+  - [[#general][General]]
+  - [[#custom-functions][Custom functions]]
+  - [[#binds][Binds]]
 - [[#user-interface][User interface]]
   - [[#theme][Theme]]
   - [[#mode-line][Mode-Line]]
@@ -53,10 +55,9 @@
   - [[#symbols-1][Symbols]]
 
 * Bootstrap
-
 ** Constants
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (defconst EMACS26+ (> emacs-major-version 25))
 (defconst EMACS27+ (> emacs-major-version 26))
 
@@ -64,29 +65,29 @@
 (defconst IS-LINUX   (eq system-type 'gnu/linux))
 (defconst IS-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
 (defconst IS-BSD     (or IS-MAC (eq system-type 'berkeley-unix)))
-#+END_SRC
+   #+END_SRC
 
 ** Use better defaults
 
-Enable fullscreen.
+   Enable fullscreen.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (add-hook 'after-init 'toggle-frame-fullscreen)
-#+END_SRC
+   #+END_SRC
 
-Some UI elements are rather invasive. No-mouse master race.
+   Some UI elements are rather invasive. No-mouse master race.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 ;; Prevent the glimpse of un-styled Emacs by setting these early.
 (add-to-list 'default-frame-alist '(tool-bar-lines . 0))
 (add-to-list 'default-frame-alist '(menu-bar-lines . 0))
 (add-to-list 'default-frame-alist '(vertical-scroll-bars))
-#+END_SRC
+   #+END_SRC
 
-Here are what I consider better defaults as per my own experience.
+   Here are what I consider better defaults as per my own experience.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (setq-default
     ad-redefinition-action 'accept                   ; Silence warnings for redefinition
@@ -156,40 +157,40 @@ Here are what I consider better defaults as per my own experience.
 (setq locale-coding-system 'utf-8)     ; please
 (unless IS-WINDOWS
   (setq selection-coding-system 'utf-8))  ; with sugar on top
-#+END_SRC
+   #+END_SRC
 
-Garbage-collect on focus-out, Emacs /should/ feel snappier.
+   Garbage-collect on focus-out, Emacs /should/ feel snappier.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (add-hook 'focus-out-hook #'garbage-collect)
-#+END_SRC
+   #+END_SRC
 
 ** Load =.custom.el=
 
-One is able to use the customization interface that is bundled within Emacs. It
-is meant to help people who are not familiar with Emacs Lisp in the
-configuration of Emacs itself. By default, changes in the customization will be
-automatically detected and appended at the end of the configuration file,
-=init.el=.
+   One is able to use the customization interface that is bundled within Emacs. It
+   is meant to help people who are not familiar with Emacs Lisp in the
+   configuration of Emacs itself. By default, changes in the customization will be
+   automatically detected and appended at the end of the configuration file,
+   =init.el=.
 
-Since that in my case, the actual configuration file is a new one, crafted by
-=org-mode=, adding code at the end of =init.el= might mess things up. The
-following tells Emacs to add extra code in another file that would be then
-loaded, if existing.
+   Since that in my case, the actual configuration file is a new one, crafted by
+   =org-mode=, adding code at the end of =init.el= might mess things up. The
+   following tells Emacs to add extra code in another file that would be then
+   loaded, if existing.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (setq-default custom-file (expand-file-name ".custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
-#+END_SRC
+   #+END_SRC
 
 ** Load =.secret.el=
 
-I load =~/.emacs.d/.secret.el= to keep sensible things out of version control.
-For instance, you could set your identity by customizing both =user-full-name=
-and =user-mail-address=. This is also where you want your API tokens to live.
+   I load =~/.emacs.d/.secret.el= to keep sensible things out of version control.
+   For instance, you could set your identity by customizing both =user-full-name=
+   and =user-mail-address=. This is also where you want your API tokens to live.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (defvar me/erc-nick               nil        "The ERC nick to use.")
 (defvar me/erc-password           nil        "The ERC password to use.")
 (defvar me/erc-port               nil        "The ERC port to use.")
@@ -204,14 +205,48 @@ and =user-mail-address=. This is also where you want your API tokens to live.
 (let ((secret.el (expand-file-name ".secret.el" user-emacs-directory)))
   (when (file-exists-p secret.el)
     (load secret.el)))
-#+END_SRC
+   #+END_SRC
 
 ** Core packages
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
-(use-package async
-    :defer t)
+(use-package better-jumper
+  :init
+  (global-set-key [remap evil-jump-forward]  #'better-jumper-jump-forward)
+  (global-set-key [remap evil-jump-backward] #'better-jumper-jump-backward)
+  (global-set-key [remap xref-pop-marker-stack] #'better-jumper-jump-backward)
+  (setq better-jumper-context 'window)
+  :config
+  (better-jumper-mode +1)
+  (add-hook 'better-jumper-post-jump-hook #'recenter)
+
+  (defun doom*set-jump (orig-fn &rest args)
+    "Set a jump point and ensure ORIG-FN doesn't set any new jump points."
+    (better-jumper-set-jump (if (markerp (car args)) (car args)))
+    (let ((evil--jumps-jumping t)
+          (better-jumper--jumping t))
+      (apply orig-fn args)))
+
+  (defun doom*set-jump-maybe (orig-fn &rest args)
+    "Set a jump point if ORIG-FN returns non-nil."
+    (let ((origin (point-marker))
+          (result
+           (let* ((evil--jumps-jumping t)
+                  (better-jumper--jumping t))
+             (apply orig-fn args))))
+      (unless result
+        (with-current-buffer (marker-buffer origin)
+          (better-jumper-set-jump
+           (if (markerp (car args))
+               (car args)
+             origin))))
+      result))
+
+  (defun doom|set-jump ()
+    "Run `better-jumper-set-jump' but return nil, for short-circuiting hooks."
+    (better-jumper-set-jump)
+    nil))
 
 (use-package undo-tree
     :config
@@ -226,24 +261,25 @@ and =user-mail-address=. This is also where you want your API tokens to live.
 
 (add-to-list 'load-path "~/.emacs.d/util/")
 (require 'core-util)
-#+END_SRC
-
+   #+END_SRC
 
 ** Keybinds
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package general)
 (defalias 'define-key! #'general-def)
 (defalias 'unmap! #'general-unbind)
 
-#+END_SRC
+   #+END_SRC
 
 * Evil
+** General
 
-** General Evil
-
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
+(defvar +evil-want-o/O-to-continue-comments t
+  "If non-nil, the o/O keys will continue comment lines if the point is on a
+line with a linewise comment.")
 
 (defun +evil--insert-newline (&optional above _noextranewline)
   (let ((pos (save-excursion (beginning-of-line-text) (point)))
@@ -287,7 +323,6 @@ and =user-mail-address=. This is also where you want your API tokens to live.
                (insert (if use-hard-newlines hard-newline "\n"))
                (back-to-indentation)))))))
 
-;;;###autoload
 (defun +evil*insert-newline-below-and-respect-comments (orig-fn count)
   (if (or (not +evil-want-o/O-to-continue-comments)
           (not (eq this-command 'evil-open-below))
@@ -298,7 +333,6 @@ and =user-mail-address=. This is also where you want your API tokens to live.
       (let ((evil-auto-indent evil-auto-indent))
         (funcall orig-fn count)))))
 
-;;;###autoload
 (defun +evil*insert-newline-above-and-respect-comments (orig-fn count)
   (if (or (not +evil-want-o/O-to-continue-comments)
           (not (eq this-command 'evil-open-above))
@@ -309,12 +343,10 @@ and =user-mail-address=. This is also where you want your API tokens to live.
       (let ((evil-auto-indent evil-auto-indent))
         (funcall orig-fn count)))))
 
-;;;###autoload
 (defun +evil*static-reindent (orig-fn &rest args)
   "Don't move cursor on indent."
   (save-excursion (apply orig-fn args)))
 
-;;;###autoload
 (defun +evil*resolve-vim-path (file-name)
   "Take a path and resolve any vim-like filename modifiers in it. This adds
 support for most vim file modifiers, as well as:
@@ -564,20 +596,20 @@ more information on modifiers."
   (evil-set-command-properties
    '+evil:align :move-point t :ex-arg 'buffer-match :ex-bang t :keep-visual t :suppress-operator t)
   (evil-mode 1))
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package evil-collection
   :config
   (evil-collection-init))
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package evil-args
   :after evil)
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-commentary
     :commands (evil-commentary
@@ -586,9 +618,9 @@ more information on modifiers."
              evil-commentary-line)
   :config (evil-commentary-mode))
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-easymotion
   :commands (evilem-create evilem-default-keybindings)
@@ -604,9 +636,9 @@ more information on modifiers."
   (evilem-make-motion evilem-motion-search-word-backward #'evil-ex-search-word-backward
                       :bind ((evil-ex-search-highlight-all nil))))
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-embrace
   :commands (embrace-add-pair embrace-add-pair-regexp)
@@ -654,9 +686,9 @@ more information on modifiers."
          :left-regexp "\\[[{(]"
          :right-regexp "\\[]})]")))
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-escape
     :after evil
@@ -673,9 +705,9 @@ more information on modifiers."
   ;; so that evil-escape-mode-hook runs, and can be toggled by evil-mc
   (evil-escape-mode +1))
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-exchange
     :commands evil-exchange
@@ -686,30 +718,30 @@ more information on modifiers."
         t))
     (add-hook 'doom-escape-hook #'+evil|escape-exchange))
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-indent-plus
   :after evil)
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-numbers
     :straight (:host github :repo "janpath/evil-numbers"))
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-textobj-anyblock
   :after evil)
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-snipe
     :commands (evil-snipe-mode evil-snipe-override-mode
@@ -724,9 +756,9 @@ more information on modifiers."
   (evil-snipe-mode +1)
   (evil-snipe-override-mode +1))
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-surround
     :commands (global-evil-surround-mode
@@ -735,9 +767,9 @@ more information on modifiers."
              evil-surround-region)
   :config (global-evil-surround-mode 1))
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package evil-visualstar
     :after evil
@@ -750,33 +782,33 @@ more information on modifiers."
         "*" #'evil-visualstar/begin-search-forward
         "#" #'evil-visualstar/begin-search-backward))
 
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 
 (use-package exato
     :commands (evil-outer-xml-attr evil-inner-xml-attr))
 
-#+END_SRC
+   #+END_SRC
 
 *** ESCAPE
 
- Universal, non-nuclear escape
+    Universal, non-nuclear escape
 
- `keyboard-quit' is too much of a nuclear option. I wanted an ESC/C-g to
- do-what-I-mean. It serves four purposes (in order):
+    `keyboard-quit' is too much of a nuclear option. I wanted an ESC/C-g to
+    do-what-I-mean. It serves four purposes (in order):
 
- 1. Quit active states e.g. highlights, searches, snippets, iedit,
-    multiple-cursors, recording macros, etc.
- 2. Close popup windows remotely (if it is allowed to)
- 3. Refresh buffer indicators, like git-gutter and flycheck
- 4. Or fall back to `keyboard-quit'
+    1. Quit active states e.g. highlights, searches, snippets, iedit,
+       multiple-cursors, recording macros, etc.
+    2. Close popup windows remotely (if it is allowed to)
+    3. Refresh buffer indicators, like git-gutter and flycheck
+    4. Or fall back to `keyboard-quit'
 
- And it should do these things incrementally, rather than all at once. And it
- shouldn't interfere with recording macros or the minibuffer. This may require
- you press ESC/C-g two or three times on some occasions to reach
- `keyboard-quit', but this is much more intuitive.
-#+BEGIN_SRC emacs-lisp
+    And it should do these things incrementally, rather than all at once. And it
+    shouldn't interfere with recording macros or the minibuffer. This may require
+    you press ESC/C-g two or three times on some occasions to reach
+    `keyboard-quit', but this is much more intuitive.
+    #+BEGIN_SRC emacs-lisp
 (defvar doom-escape-hook nil
   "A hook run after C-g is pressed (or ESC in normal mode, for evil users). Both
 trigger `doom/escape'.
@@ -797,13 +829,183 @@ If any hook returns non-nil, all hooks after it are ignored.")
         ((keyboard-quit))))
 
 (global-set-key [remap keyboard-quit] #'doom/escape)
-#+END_SRC 
+    #+END_SRC
 
+** Custom functions
 
-*** Keybinds
+   #+BEGIN_SRC emacs-lisp
+(defun +evil/visual-indent ()
+  "vnoremap < <gv"
+  (interactive)
+  (evil-shift-right (region-beginning) (region-end))
+  (evil-normal-state)
+  (evil-visual-restore))
 
-    #+BEGIN_SRC emacs-lisp
-(with-eval-after-load 'evil
+(defun +evil/visual-dedent ()
+  "vnoremap > >gv"
+  (interactive)
+  (evil-shift-left (region-beginning) (region-end))
+  (evil-normal-state)
+  (evil-visual-restore))
+
+(defun +evil/paste-preserve-register ()
+  "Call `evil-paste-after' without overwriting the clipboard (by writing to the
+0 register instead). This allows you to paste the same text again afterwards."
+  (interactive)
+  (let ((evil-this-register ?0))
+    (call-interactively #'evil-paste-after)))
+   #+END_SRC
+
+** Binds
+
+   #+BEGIN_SRC emacs-lisp
+(with-eval-after-load 'evil (progn
+  (evil-define-operator +evil:open-scratch-buffer (bang)
+    (interactive "<!>")
+    (doom/open-scratch-buffer bang))
+
+  (evil-define-command +evil:pwd (bang)
+    "Display the current working directory. If BANG, copy it to your clipboard."
+    (interactive "<!>")
+    (if (not bang)
+        (pwd)
+      (kill-new default-directory)
+      (message "Copied to clipboard")))
+
+  (evil-define-command +evil:make (arguments &optional bang)
+    "Run make with ARGUMENTS.
+  If BANG is non-nil, open compilation output in a comint buffer.
+
+  If BANG, then run ARGUMENTS as a full command. This command understands vim file
+  modifiers (like %:p:h). See `+evil*resolve-vim-path' for details."
+    (interactive "<sh><!>")
+    (+evil:compile (format "make %s"
+                          (evil-ex-replace-special-filenames
+                          arguments))
+                  bang))
+
+  (evil-define-command +evil:compile (arguments &optional bang)
+    "Run `compile-command' with ARGUMENTS.
+  If BANG is non-nil, open compilation output in a comint buffer.
+
+  This command understands vim file modifiers (like %:p:h). See
+  `+evil*resolve-vim-path' for details."
+    (interactive "<sh><!>")
+    (compile (evil-ex-replace-special-filenames
+              (format "%s %s"
+                      (eval compile-command)
+                      arguments))
+            bang))
+
+  (evil-define-command +evil:reverse-lines (beg end)
+    "Reverse lines between BEG and END."
+    (interactive "<r>")
+    (reverse-region beg end))
+
+  (evil-define-command +evil:cd (&optional path)
+    "Change `default-directory' with `cd'."
+    (interactive "<f>")
+    (let ((path (or path "~")))
+      (cd path)
+      (message "Changed directory to '%s'" (abbreviate-file-name (expand-file-name path)))))
+
+  (evil-define-command +evil:kill-all-buffers (&optional bang)
+    "Kill all buffers. If BANG, kill current session too."
+    (interactive "<!>")
+    (if (and bang (fboundp '+workspace/kill-session))
+        (+workspace/kill-session)
+      (doom/kill-all-buffers)))
+
+  (evil-define-command +evil:kill-matching-buffers (&optional bang pattern)
+    "Kill all buffers matching PATTERN regexp. If BANG, only match project
+  buffers."
+    (interactive "<a>")
+    (doom/kill-matching-buffers pattern bang))
+
+  (evil-define-command +evil:help (&optional bang query)
+    "Look up help documentation for QUERY in Emacs documentation.
+
+  If BANG, search Doom documentation."
+    (interactive "<!><a>")
+    (if bang
+        (doom/help-search query)
+      (cond ((or (null query) (string-empty-p (string-trim query)))
+            (call-interactively
+              (or (command-remapping #'apropos)
+                  #'apropos)))
+            ((string-match-p "^ *:[a-z]" query)
+            (let* ((modules
+                    (cl-loop for path in (doom-module-load-path 'all)
+                              for (cat . mod) = (doom-module-from-path path)
+                              for format = (format "%s %s" cat mod)
+                              if (doom-module-p cat mod)
+                              collect (propertize format 'module (list cat mod))
+                              else if (and cat mod)
+                              collect (propertize format
+                                                  'face 'font-lock-comment-face
+                                                  'module (list cat mod))))
+                    (module (completing-read "Describe module: " modules nil t query))
+                    (key (get-text-property 0 'module module)))
+              (doom/help-modules key)))
+            ((and (string-match-p "\\(?:SPC\\|[CMsSH]-[^ ]\\|<[^>]+>\\)" query)
+                  (helpful-key (kbd (string-trim query)))))
+            ((apropos query t)))))
+
+  ;;; Custom commands
+  ;; Editing
+  (evil-ex-define-cmd "@"            #'+evil:macro-on-all-lines)   ; TODO Test me
+  (evil-ex-define-cmd "al[ign]"      #'+evil:align)
+  (evil-ex-define-cmd "ral[ign]"     #'+evil:align-right)
+  (evil-ex-define-cmd "enhtml"       #'+web:encode-html-entities)
+  (evil-ex-define-cmd "dehtml"       #'+web:decode-html-entities)
+  (evil-ex-define-cmd "mc"           #'+multiple-cursors:evil-mc)
+  (evil-ex-define-cmd "iedit"        #'evil-multiedit-ex-match)
+  (evil-ex-define-cmd "na[rrow]"     #'+evil:narrow-buffer)
+  (evil-ex-define-cmd "retab"        #'+evil:retab)
+  (evil-ex-define-cmd "rev[erse]"    #'+evil:reverse-lines)
+
+  ;;; External resources
+  ;; TODO (evil-ex-define-cmd "db"          #'doom:db)
+  ;; TODO (evil-ex-define-cmd "dbu[se]"     #'doom:db-select)
+  ;; TODO (evil-ex-define-cmd "go[ogle]"    #'doom:google-search)
+  (evil-ex-define-cmd "lo[okup]"    #'+lookup:online)
+  (evil-ex-define-cmd "dash"        #'+lookup:dash)
+  (evil-ex-define-cmd "http"        #'httpd-start)            ; start http server
+  (evil-ex-define-cmd "repl"        #'+eval:repl)             ; invoke or send to repl
+  (evil-ex-define-cmd "h[elp]"      #'+evil:help)
+
+  ;; TODO (evil-ex-define-cmd "rx"          'doom:regex)             ; open re-builder
+  (evil-ex-define-cmd "sh[ell]"     #'+eshell:run)
+  (evil-ex-define-cmd "t[mux]"      #'+tmux:run)              ; send to tmux
+  (evil-ex-define-cmd "tcd"         #'+tmux:cd-here)          ; cd to default-directory in tmux
+  (evil-ex-define-cmd "pad"         #'+evil:open-scratch-buffer)
+
+  ;;; GIT
+  (evil-ex-define-cmd "gist"        #'+gist:send)  ; send current buffer/region to gist
+  (evil-ex-define-cmd "gistl"       #'+gist:list)  ; list gists by user
+  (evil-ex-define-cmd "gbrowse"     #'+vc:git-browse)       ; show file/region in github/gitlab
+  (evil-ex-define-cmd "gissues"     #'forge-browse-issues)  ; show github issues
+  (evil-ex-define-cmd "git"         #'magit-status)         ; open magit status window
+  (evil-ex-define-cmd "gstage"      #'magit-stage)
+  (evil-ex-define-cmd "gunstage"    #'magit-unstage)
+  (evil-ex-define-cmd "gblame"      #'magit-blame)
+  (evil-ex-define-cmd "grevert"     #'git-gutter:revert-hunk)
+
+  ;;; Dealing with buffers
+  (evil-ex-define-cmd "k[ill]"      #'doom/kill-current-buffer)
+  (evil-ex-define-cmd "k[ill]all"   #'+evil:kill-all-buffers)
+  (evil-ex-define-cmd "k[ill]m"     #'+evil:kill-matching-buffers)
+  (evil-ex-define-cmd "k[ill]o"     #'doom/kill-other-buffers)
+  (evil-ex-define-cmd "k[ill]b"     #'doom/kill-buried-buffers)
+  (evil-ex-define-cmd "l[ast]"      #'doom/popup-restore)
+  (evil-ex-define-cmd "m[sg]"       #'view-echo-area-messages)
+  (evil-ex-define-cmd "pop[up]"     #'doom/popup-this-buffer)
+
+  ;;; Project navigation
+  (evil-ex-define-cmd "a"           #'projectile-find-other-file)
+  (evil-ex-define-cmd "cd"          #'+evil:cd)
+  (evil-ex-define-cmd "pwd"         #'+evil:pwd)
+
   (evil-ex-define-cmd "ag"        #'+ivy:ag)
   (evil-ex-define-cmd "agc[wd]"   #'+ivy:ag-from-cwd)
   (evil-ex-define-cmd "rg"        #'+ivy:rg)
@@ -812,9 +1014,191 @@ If any hook returns non-nil, all hooks after it are ignored.")
   (evil-ex-define-cmd "ptc[wd]"   #'+ivy:pt-from-cwd)
   (evil-ex-define-cmd "grep"      #'+ivy:grep)
   (evil-ex-define-cmd "grepc[wd]" #'+ivy:grep-from-cwd)
-  (evil-ex-define-cmd "sw[iper]"  #'+ivy:swipe)
-  (evil-ex-define-cmd "todo"      #'+ivy:todo))
+  (evil-ex-define-cmd "sw[iper]"  #'+ivy:swiper)
+  (evil-ex-define-cmd "todo"      #'+ivy:todo)
+
+  ;;; Project tools
+  (evil-ex-define-cmd "compile"     #'+evil:compile)
+  (evil-ex-define-cmd "mak[e]"      #'+evil:make)
+  (evil-ex-define-cmd "debug"       #'+debugger/start)
+  (evil-ex-define-cmd "er[rors]"    #'flycheck-list-errors)
+
+  ;;; File operations
+  (evil-ex-define-cmd "cp"          #'+evil:copy-this-file)
+  (evil-ex-define-cmd "mv"          #'+evil:move-this-file)
+  (evil-ex-define-cmd "rm"          #'+evil:delete-this-file)
+
+  ;;; Sessions/tabs
+  (evil-ex-define-cmd "sclear"      #'+workspace/kill-session)
+  (evil-ex-define-cmd "sl[oad]"     #'doom/quickload-session)
+  (evil-ex-define-cmd "ss[ave]"     #'doom/quicksave-session)
+  (evil-ex-define-cmd "tabc[lose]"  #'+workspace:delete)
+  (evil-ex-define-cmd "tabclear"    #'doom/kill-all-buffers)
+  (evil-ex-define-cmd "tabl[ast]"   #'+workspace/switch-to-last)
+  (evil-ex-define-cmd "tabload"     #'+workspace:load)
+  (evil-ex-define-cmd "tabn[ew]"    #'+workspace:new)
+  (evil-ex-define-cmd "tabn[ext]"   #'+workspace:switch-next)
+  (evil-ex-define-cmd "tabp[rev]"   #'+workspace:switch-previous)
+  (evil-ex-define-cmd "tabr[ename]" #'+workspace:rename)
+  (evil-ex-define-cmd "tabs"        #'+workspace/display)
+  (evil-ex-define-cmd "tabsave"     #'+workspace:save)
+
+  ;;; Org-mode
+  (evil-ex-define-cmd "cap"         #'org-capture)))
+   #+END_SRC
+
+*** Global
+
+    #+BEGIN_SRC emacs-lisp
+    (map! (:map override
+          ;; A little sandbox to run code in
+          "M-;" #'eval-expression
+          "A-;" #'eval-expression)
+
+        ;; Smarter newlines
+        :i [remap newline] #'newline-and-indent  ; auto-indent on newline
+        :i "C-j"           #'+default/newline    ; default behavior
+
+        (:map (help-mode-map helpful-mode-map)
+          :n "o" 'ace-link-help)
+
+        ;; misc
+        :n "C-S-f"  #'toggle-frame-fullscreen
+
+        ;; ported from vim
+        :m  "]m"    #'+evil/next-beginning-of-method
+        :m  "[m"    #'+evil/previous-beginning-of-method
+        :m  "]M"    #'+evil/next-end-of-method
+        :m  "[M"    #'+evil/previous-end-of-method
+        :m  "]#"    #'+evil/next-preproc-directive
+        :m  "[#"    #'+evil/previous-preproc-directive
+        :m  "]*"    #'+evil/next-comment
+        :m  "[*"    #'+evil/previous-comment
+        :m  "]\\"   #'+evil/next-comment
+        :m  "[\\"   #'+evil/previous-comment
+        :nv "z="    #'flyspell-correct-word-generic
+        :v  "@"     #'+evil:apply-macro
+
+        ;; ported from vim-unimpaired
+        :n  "] SPC" #'+evil/insert-newline-below
+        :n  "[ SPC" #'+evil/insert-newline-above
+        :n  "]b"    #'next-buffer
+        :n  "[b"    #'previous-buffer
+        :n  "]f"    #'+evil/next-file
+        :n  "[f"    #'+evil/previous-file
+        :m  "]u"    #'+evil:url-encode
+        :m  "[u"    #'+evil:url-decode
+        :m  "]y"    #'+evil:c-string-encode
+        :m  "[y"    #'+evil:c-string-decode
+        ;; NOTE hl-todo-{next,previous} have ]t/[t, use ]F/[F instead
+        ;; NOTE {next,previous}-error have ]e/[e, use ddp/ddP or gx instead
+        :m "]x" #'+web:encode-html-entities
+        :m "[x" #'+web:decode-html-entities
+
+        ;; custom vim-unmpaired-esque keys
+        :m  "]a"    #'evil-forward-arg
+        :m  "[a"    #'evil-backward-arg
+        :m  "]e"    #'next-error
+        :m  "[e"    #'previous-error
+        :n  "]F"    #'+evil/next-frame
+        :n  "[F"    #'+evil/previous-frame
+        :m  "]h"    #'outline-next-visible-heading
+        :m  "[h"    #'outline-previous-visible-heading
+        :n  "[o"    #'+evil/insert-newline-above
+        :n  "]o"    #'+evil/insert-newline-below
+        :n  "gp"    #'+evil/reselect-paste
+        :v  "gp"    #'+evil/paste-preserve-register
+        :nv "g@"    #'+evil:apply-macro
+        :nv "gc"    #'evil-commentary
+        :nv "gx"    #'evil-exchange
+        :n  "g="    #'evil-numbers/inc-at-pt
+        :n  "g-"    #'evil-numbers/dec-at-pt
+        :v  "g="    #'evil-numbers/inc-at-pt-incremental
+        :v  "g-"    #'evil-numbers/dec-at-pt-incremental
+        :v  "g+"    #'evil-numbers/inc-at-pt
+
+        ;; custom evil keybinds
+        :n  "zx"    #'kill-current-buffer
+        :n  "ZX"    #'bury-buffer
+        ;; repeat in visual mode (FIXME buggy)
+        :v  "."     #'+evil:apply-macro
+        ;; don't leave visual mode after shifting
+        :v  "<"     #'+evil/visual-dedent  ; vnoremap < <gv
+        :v  ">"     #'+evil/visual-indent  ; vnoremap > >gv
+
+        ;; window management (prefix "C-w")
+        (:map evil-window-map
+          ;; Navigation
+          "C-h"     #'evil-window-left
+          "C-j"     #'evil-window-down
+          "C-k"     #'evil-window-up
+          "C-l"     #'evil-window-right
+          "C-w"     #'other-window
+          ;; Swapping windows
+          "H"       #'+evil/window-move-left
+          "J"       #'+evil/window-move-down
+          "K"       #'+evil/window-move-up
+          "L"       #'+evil/window-move-right
+          "C-S-w"   #'ace-swap-window
+          ;; Window undo/redo
+          (:prefix "m"
+            "m"       #'doom/window-maximize-buffer
+            "v"       #'doom/window-maximize-vertically
+            "s"       #'doom/window-maximize-horizontally)
+          "u"       #'winner-undo
+          "C-u"     #'winner-undo
+          "C-r"     #'winner-redo
+          "o"       #'doom/window-enlargen
+          ;; Delete window
+          "c"       #'+workspace/close-window-or-workspace
+          "C-C"     #'ace-delete-window)
+
+        ;; Plugins
+        ;; evil-easymotion
+        :m  "gs"    #'+evil/easymotion  ; lazy-load `evil-easymotion'
+        (:after evil-easymotion
+          :map evilem-map
+          "a" (evilem-create #'evil-forward-arg)
+          "A" (evilem-create #'evil-backward-arg)
+          "s" (evilem-create #'evil-snipe-repeat
+                            :name 'evil-easymotion-snipe-forward
+                            :pre-hook (save-excursion (call-interactively #'evil-snipe-s))
+                            :bind ((evil-snipe-scope 'buffer)
+                                    (evil-snipe-enable-highlight)
+                                    (evil-snipe-enable-incremental-highlight)))
+          "S" (evilem-create #'evil-snipe-repeat
+                            :name 'evil-easymotion-snipe-backward
+                            :pre-hook (save-excursion (call-interactively #'evil-snipe-S))
+                            :bind ((evil-snipe-scope 'buffer)
+                                    (evil-snipe-enable-highlight)
+                                    (evil-snipe-enable-incremental-highlight)))
+          "SPC" (λ!! #'avy-goto-char-timer t)
+          "/" #'avy-goto-char-timer)
+
+        ;; text object plugins
+        :textobj "x" #'evil-inner-xml-attr               #'evil-outer-xml-attr
+        :textobj "a" #'evil-inner-arg                    #'evil-outer-arg
+        :textobj "B" #'evil-textobj-anyblock-inner-block #'evil-textobj-anyblock-a-block
+        :textobj "i" #'evil-indent-plus-i-indent         #'evil-indent-plus-a-indent
+        :textobj "k" #'evil-indent-plus-i-indent-up      #'evil-indent-plus-a-indent-up
+        :textobj "j" #'evil-indent-plus-i-indent-up-down #'evil-indent-plus-a-indent-up-down
+
+        ;; evil-snipe
+        (:after evil-snipe
+          :map evil-snipe-parent-transient-map
+          "C-;" (λ! (require 'evil-easymotion)
+                    (call-interactively
+                    (evilem-create #'evil-snipe-repeat
+                                    :bind ((evil-snipe-scope 'whole-buffer)
+                                          (evil-snipe-enable-highlight)
+                                          (evil-snipe-enable-incremental-highlight))))))
+
+        ;; evil-surround
+        :v "S" #'evil-surround-region
+        :o "s" #'evil-surround-edit
+        :o "S" #'evil-Surround-edit)
     #+END_SRC
+
 
 * User interface
 
@@ -986,15 +1370,13 @@ If any hook returns non-nil, all hooks after it are ignored.")
 
     #+BEGIN_SRC emacs-lisp
 (use-package vi-tilde-fringe
-    :config
-    (add-hook 'prog-mode-hook vi-tilde-fringe-mode)
-    (add-hook 'text-mode-hook vi-tilde-fringe-mode)
-    (add-hook 'fundamental-mode-hook vi-tilde-fringe-mode))
+    :hook
+    (prog-mode . vi-tilde-fringe-mode)
+    (text-mode . vi-tilde-fringe-mode)
+    (conf-mode . vi-tilde-fringe-mode))
     #+END_SRC
 
-
 * Languages
-
 ** CSS
 
    #+BEGIN_SRC emacs-lisp
@@ -1236,7 +1618,6 @@ If any hook returns non-nil, all hooks after it are ignored.")
    #+END_SRC
 
 * Features
-
 ** Alert
 
    #+BEGIN_QUOTE
@@ -1267,22 +1648,106 @@ If any hook returns non-nil, all hooks after it are ignored.")
 
    #+BEGIN_SRC emacs-lisp
 (use-package company
-  :bind
-  (:map company-active-map
-        ("RET" . nil)
-        ([return] . nil)
-        ("TAB" . company-complete-selection)
-        ([tab] . company-complete-selection)
-        ("<right>" . company-complete-common))
-  :hook
-  (after-init . global-company-mode)
-  :custom
-  (company-dabbrev-downcase nil)
-  (company-idle-delay .2)
-  (company-minimum-prefix-length 1)
-  (company-require-match nil)
-  (company-tooltip-align-annotations t))
+    :bind
+    (:map company-active-map
+            ("RET" . nil)
+            ([return] . nil)
+            ("TAB" . company-complete-selection)
+            ([tab] . company-complete-selection)
+            ("<right>" . company-complete-common))
+    :hook
+    (after-init . global-company-mode)
+    :init
+    (setq company-minimum-prefix-length 2
+            company-tooltip-limit 14
+            company-dabbrev-downcase nil
+            company-dabbrev-ignore-case nil
+            company-dabbrev-code-other-buffers t
+            company-tooltip-align-annotations t
+            company-require-match 'never
+            company-global-modes
+            '(not erc-mode message-mode help-mode gud-mode eshell-mode)
+            company-backends '(company-capf)
+            company-frontends
+            '(company-pseudo-tooltip-frontend
+            company-echo-metadata-frontend))
+    :config
+    (with-eval-after-load 'evil (add-hook 'company-mode-hook #'evil-normalize-keymaps))
+    (defun +company*abort-previous (&rest _) (company-abort))
+    (advice-add #'company-begin-backend :before #'+company*abort-previous)
+    (global-company-mode +1))
    #+END_SRC
+
+
+   Make company face look nicer
+
+   #+BEGIN_SRC emacs-lisp
+(use-package company-box
+    :hook (company-mode . company-box-mode)
+    :config
+    (setq company-box-show-single-candidate t
+            company-box-backends-colors nil
+            company-box-max-candidates 50
+            company-box-icons-alist 'company-box-icons-all-the-icons
+            company-box-icons-functions
+            '(+company-box-icons--yasnippet company-box-icons--lsp +company-box-icons--elisp company-box-icons--acphp)
+            company-box-icons-all-the-icons
+            `((Unknown       . ,(all-the-icons-material "find_in_page"             :height 0.8 :face 'all-the-icons-purple))
+            (Text          . ,(all-the-icons-material "text_fields"              :height 0.8 :face 'all-the-icons-green))
+            (Method        . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
+            (Function      . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
+            (Constructor   . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
+            (Field         . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
+            (Variable      . ,(all-the-icons-material "adjust"                   :height 0.8 :face 'all-the-icons-blue))
+            (Class         . ,(all-the-icons-material "class"                    :height 0.8 :face 'all-the-icons-red))
+            (Interface     . ,(all-the-icons-material "settings_input_component" :height 0.8 :face 'all-the-icons-red))
+            (Module        . ,(all-the-icons-material "view_module"              :height 0.8 :face 'all-the-icons-red))
+            (Property      . ,(all-the-icons-material "settings"                 :height 0.8 :face 'all-the-icons-red))
+            (Unit          . ,(all-the-icons-material "straighten"               :height 0.8 :face 'all-the-icons-red))
+            (Value         . ,(all-the-icons-material "filter_1"                 :height 0.8 :face 'all-the-icons-red))
+            (Enum          . ,(all-the-icons-material "plus_one"                 :height 0.8 :face 'all-the-icons-red))
+            (Keyword       . ,(all-the-icons-material "filter_center_focus"      :height 0.8 :face 'all-the-icons-red))
+            (Snippet       . ,(all-the-icons-material "short_text"               :height 0.8 :face 'all-the-icons-red))
+            (Color         . ,(all-the-icons-material "color_lens"               :height 0.8 :face 'all-the-icons-red))
+            (File          . ,(all-the-icons-material "insert_drive_file"        :height 0.8 :face 'all-the-icons-red))
+            (Reference     . ,(all-the-icons-material "collections_bookmark"     :height 0.8 :face 'all-the-icons-red))
+            (Folder        . ,(all-the-icons-material "folder"                   :height 0.8 :face 'all-the-icons-red))
+            (EnumMember    . ,(all-the-icons-material "people"                   :height 0.8 :face 'all-the-icons-red))
+            (Constant      . ,(all-the-icons-material "pause_circle_filled"      :height 0.8 :face 'all-the-icons-red))
+            (Struct        . ,(all-the-icons-material "streetview"               :height 0.8 :face 'all-the-icons-red))
+            (Event         . ,(all-the-icons-material "event"                    :height 0.8 :face 'all-the-icons-red))
+            (Operator      . ,(all-the-icons-material "control_point"            :height 0.8 :face 'all-the-icons-red))
+            (TypeParameter . ,(all-the-icons-material "class"                    :height 0.8 :face 'all-the-icons-red))
+            ;; (Template   . ,(company-box-icons-image "Template.png"))))
+            (Yasnippet     . ,(all-the-icons-material "short_text"               :height 0.8 :face 'all-the-icons-green))
+            (ElispFunction . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
+            (ElispVariable . ,(all-the-icons-material "check_circle"             :height 0.8 :face 'all-the-icons-blue))
+            (ElispFeature  . ,(all-the-icons-material "stars"                    :height 0.8 :face 'all-the-icons-orange))
+            (ElispFace     . ,(all-the-icons-material "format_paint"             :height 0.8 :face 'all-the-icons-pink))))
+
+    (defun +company-box-icons--yasnippet (candidate)
+        (when (get-text-property 0 'yas-annotation candidate)
+        'Yasnippet))
+
+    (defun +company-box-icons--elisp (candidate)
+        (when (derived-mode-p 'emacs-lisp-mode)
+        (let ((sym (intern candidate)))
+            (cond ((fboundp sym)  'ElispFunction)
+                ((boundp sym)   'ElispVariable)
+                ((featurep sym) 'ElispFeature)
+                ((facep sym)    'ElispFace))))))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+(use-package company-prescient
+    :hook (company-mode . company-prescient-mode)
+    :config
+    ;; NOTE prescient config duplicated with `ivy'
+    (setq prescient-save-file (concat my/cache-dir "prescient-save.el"))
+    (prescient-persist-mode +1))
+   #+END_SRC
+
+
 
 ** Buffers and Windows
 
@@ -1704,9 +2169,6 @@ If any hook returns non-nil, all hooks after it are ignored.")
   :hook (ivy-mode . ivy-prescient-mode)
   :init
   (setq prescient-filter-method '(literal regexp initialism)
-        ;; (if (featurep! +fuzzy)
-        ;;     '(literal regexp initialism fuzzy)
-        ;;   '(literal regexp initialism))
         ivy-prescient-enable-filtering t  ; we do this ourselves
         ivy-prescient-retain-classic-highlighting t
         ivy-initial-inputs-alist nil
@@ -2443,7 +2905,7 @@ _q_ quit            _b_ balance         _-_ out
    [[https://github.com/Malabarba/aggressive-indent-mode][Artur Malabarba]]
    #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package aggressive-indent
   :preface
   (defun me/aggressive-indent-mode-off ()
@@ -2458,11 +2920,11 @@ _q_ quit            _b_ balance         _-_ out
   (aggressive-indent-comments-too t)
   :config
   (add-to-list 'aggressive-indent-protected-commands 'comment-dwim))
-#+END_SRC
+   #+END_SRC
 
    Insert the current date.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (defun me/date-iso ()
   "Insert the current date, ISO format, eg. 2016-12-09."
   (interactive)
@@ -2492,7 +2954,7 @@ _q_ quit            _b_ balance         _-_ out
   "Insert the current date, short format with time, eg. 2016.12.09 14:34"
   (interactive)
   (insert (format-time-string "%Y.%m.%d %H:%M")))
-#+END_SRC
+   #+END_SRC
 
    Disable documentation for object at point in the echo area. It conflicts with Flycheck.
 
@@ -2680,7 +3142,7 @@ _q_ quit            _b_ balance         _-_ out
 
 *** Evil
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package evil-magit
     :after magit
     :init
@@ -2705,20 +3167,20 @@ _q_ quit            _b_ balance         _-_ out
         (evil-define-key* evil-magit-state git-rebase-mode-map
         "gj" #'git-rebase-move-line-down
         "gk" #'git-rebase-move-line-up)))
-#+END_SRC
+    #+END_SRC
 
 *** Git flow                                                            :tes:
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package magit-gitflow
     :hook (magit-mode . turn-on-magit-gitflow))
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package gitattributes-mode)
 (use-package gitconfig-mode)
 (use-package gitignore-mode)
-#+END_SRC
+    #+END_SRC
 
 ** Whitespaces
 
@@ -2746,7 +3208,6 @@ _q_ quit            _b_ balance         _-_ out
                     '(special-mode comint-mode term-mode eshell-mode)))
     (ws-butler-global-mode))
    #+END_SRC
-
 
 
 * Symbols

@@ -250,7 +250,13 @@ For example, :nvi will map to (list 'normal 'visual 'insert). See
 (defvar doom--map-state '(:dummy t))
 (defvar doom--map-parent-state nil)
 (defvar doom--map-evil-p nil)
-(after! evil (setq doom--map-evil-p t))
+(with-eval-after-load 'evil (setq doom--map-evil-p t))
+
+(defun doom-keyword-name (keyword)
+  "Returns the string name of KEYWORD (`keywordp') minus the leading colon."
+  (declare (pure t) (side-effect-free t))
+  (cl-check-type :test keyword)
+  (substring (symbol-name keyword) 1))
 
 (defun doom--map-process (rest)
   (let ((doom--map-fn doom--map-fn)
