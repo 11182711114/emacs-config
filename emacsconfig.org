@@ -759,6 +759,47 @@ more information on modifiers."
 
 #+END_SRC
 
+*** ESCAPE
+
+ Universal, non-nuclear escape
+
+ `keyboard-quit' is too much of a nuclear option. I wanted an ESC/C-g to
+ do-what-I-mean. It serves four purposes (in order):
+
+ 1. Quit active states e.g. highlights, searches, snippets, iedit,
+    multiple-cursors, recording macros, etc.
+ 2. Close popup windows remotely (if it is allowed to)
+ 3. Refresh buffer indicators, like git-gutter and flycheck
+ 4. Or fall back to `keyboard-quit'
+
+ And it should do these things incrementally, rather than all at once. And it
+ shouldn't interfere with recording macros or the minibuffer. This may require
+ you press ESC/C-g two or three times on some occasions to reach
+ `keyboard-quit', but this is much more intuitive.
+#+BEGIN_SRC emacs-lisp
+(defvar doom-escape-hook nil
+  "A hook run after C-g is pressed (or ESC in normal mode, for evil users). Both
+trigger `doom/escape'.
+
+If any hook returns non-nil, all hooks after it are ignored.")
+
+(defun doom/escape ()
+  "Run `doom-escape-hook'."
+  (interactive)
+  (cond ((minibuffer-window-active-p (minibuffer-window))
+         ;; quit the minibuffer if open.
+         (abort-recursive-edit))
+        ;; Run all escape hooks. If any returns non-nil, then stop there.
+        ((run-hook-with-args-until-success 'doom-escape-hook))
+        ;; don't abort macros
+        ((or defining-kbd-macro executing-kbd-macro) nil)
+        ;; Back to the default
+        ((keyboard-quit))))
+
+(global-set-key [remap keyboard-quit] #'doom/escape)
+#+END_SRC 
+
+
 *** Keybinds
 
     #+BEGIN_SRC emacs-lisp
@@ -2251,8 +2292,7 @@ _q_ quit            _b_ balance         _-_ out
 
 **** Evil
      #+BEGIN_SRC emacs-lisp
-(use-package evil-anzu
-    :after (evil anzu))
+(use-package evil-anzu)
      #+END_SRC
 
 
@@ -2403,7 +2443,7 @@ _q_ quit            _b_ balance         _-_ out
    [[https://github.com/Malabarba/aggressive-indent-mode][Artur Malabarba]]
    #+END_QUOTE
 
-   #+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp
 (use-package aggressive-indent
   :preface
   (defun me/aggressive-indent-mode-off ()
@@ -2418,11 +2458,11 @@ _q_ quit            _b_ balance         _-_ out
   (aggressive-indent-comments-too t)
   :config
   (add-to-list 'aggressive-indent-protected-commands 'comment-dwim))
-   #+END_SRC
+#+END_SRC
 
    Insert the current date.
 
-   #+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp
 (defun me/date-iso ()
   "Insert the current date, ISO format, eg. 2016-12-09."
   (interactive)
@@ -2452,7 +2492,7 @@ _q_ quit            _b_ balance         _-_ out
   "Insert the current date, short format with time, eg. 2016.12.09 14:34"
   (interactive)
   (insert (format-time-string "%Y.%m.%d %H:%M")))
-   #+END_SRC
+#+END_SRC
 
    Disable documentation for object at point in the echo area. It conflicts with Flycheck.
 
