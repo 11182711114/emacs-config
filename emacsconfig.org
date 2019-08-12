@@ -2682,7 +2682,7 @@ _q_ quit            _b_ balance         _-_ out
 
 #+BEGIN_SRC emacs-lisp
 (use-package evil-magit
-    :after (magit evil)
+    :after magit
     :init
     (setq evil-magit-state 'normal
         evil-magit-use-z-for-folds t)
@@ -2698,7 +2698,7 @@ _q_ quit            _b_ balance         _-_ out
         magit-revision-mode-map
         magit-diff-mode-map)
         [tab] #'magit-section-toggle)
-    (after! git-rebase
+    (with-eval-after-load 'git-rebase
         (dolist (key '(("M-k" . "gk") ("M-j" . "gj")))
         (when-let (desc (assoc (car key) evil-magit-rebase-commands-w-descriptions))
             (setcar desc (cdr key))))
