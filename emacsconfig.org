@@ -784,7 +784,7 @@ trigger `doom/escape'.
 If any hook returns non-nil, all hooks after it are ignored.")
 
 (defun doom/escape ()
-  "Run `doom-escape-hook'."
+"Run `doom-escape-hook'."
   (interactive)
   (cond ((minibuffer-window-active-p (minibuffer-window))
          ;; quit the minibuffer if open.
@@ -2677,6 +2677,42 @@ _q_ quit            _b_ balance         _-_ out
   :config
   (remove-hook 'magit-section-highlight-hook #'magit-section-highlight))
    #+END_SRC
+
+*** Evil
+
+#+BEGIN_SCR emacs-lisp
+(use-package evil-magit
+    :after magit
+    :init
+    (setq evil-magit-state 'normal
+        evil-magit-use-z-for-folds t)
+    :config
+    (unmap! magit-mode-map "M-1" "M-2" "M-3" "M-4") ; replaced by z1, z2, z3, etc
+    (evil-define-key* 'normal magit-status-mode-map [escape] nil) ; q is enough
+    (evil-define-key* '(normal visual) magit-mode-map
+        "zz" #'evil-scroll-line-to-center
+        "%"  #'magit-gitflow-popup)
+    (define-key! 'normal
+        (magit-status-mode-map
+        magit-stash-mode-map
+        magit-revision-mode-map
+        magit-diff-mode-map)
+        [tab] #'magit-section-toggle)
+    (after! git-rebase
+        (dolist (key '(("M-k" . "gk") ("M-j" . "gj")))
+        (when-let (desc (assoc (car key) evil-magit-rebase-commands-w-descriptions))
+            (setcar desc (cdr key))))
+        (evil-define-key* evil-magit-state git-rebase-mode-map
+        "gj" #'git-rebase-move-line-down
+        "gk" #'git-rebase-move-line-up)))
+#+END_SRC
+
+*** Git flow
+
+#+BEGIN_SCR emacs-lisp
+(use-package magit-gitflow
+    :hook (magit-mode . turn-on-magit-gitflow))
+#+END_SRC
 
    #+BEGIN_SRC emacs-lisp
 (use-package gitattributes-mode)
