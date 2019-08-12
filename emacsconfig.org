@@ -568,7 +568,6 @@ more information on modifiers."
 
 #+BEGIN_SRC emacs-lisp
 (use-package evil-collection
-  :after evil
   :config
   (evil-collection-init))
 #+END_SRC
@@ -581,12 +580,11 @@ more information on modifiers."
 #+BEGIN_SRC emacs-lisp
 
 (use-package evil-commentary
-  :after evil
-  :commands (evil-commentary
+    :commands (evil-commentary
              evil-commentary-yank
              evil-commentary-yank-line
              evil-commentary-line)
-  :config (evil-commentary-mode 1))
+  :config (evil-commentary-mode))
 
 #+END_SRC
 
@@ -661,14 +659,14 @@ more information on modifiers."
 #+BEGIN_SRC emacs-lisp
 
 (use-package evil-escape
-  :after evil
-  :commands (evil-escape)
-  :init
-  (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
-        evil-escape-excluded-major-modes '(treemacs-mode vterm-mode)
-        evil-escape-key-sequence "jk"
-        evil-escape-delay 0.25)
-  (evil-define-key* '(insert replace visual operator) 'global "\C-g" #'evil-escape)
+    :after evil
+    :commands (evil-escape)
+    :init
+    (setq evil-escape-excluded-states '(normal visual multiedit emacs motion)
+            evil-escape-excluded-major-modes '(treemacs-mode vterm-mode)
+            evil-escape-key-sequence "jk"
+            evil-escape-delay 0.25)
+    (evil-define-key* '(insert replace visual operator) 'global "\C-g" #'evil-escape)
   :config
   ;; no `evil-escape' in minibuffer
   (add-hook 'evil-escape-inhibit-functions #'minibufferp)
@@ -680,14 +678,13 @@ more information on modifiers."
 #+BEGIN_SRC emacs-lisp
 
 (use-package evil-exchange
-  :after evil
-  :commands evil-exchange
-  :config
-  (defun +evil|escape-exchange ()
-    (when evil-exchange--overlays
-      (evil-exchange-cancel)
-      t))
-  (add-hook 'doom-escape-hook #'+evil|escape-exchange))
+    :commands evil-exchange
+    :config
+    (defun +evil|escape-exchange ()
+        (when evil-exchange--overlays
+        (evil-exchange-cancel)
+        t))
+    (add-hook 'doom-escape-hook #'+evil|escape-exchange))
 
 #+END_SRC
 
@@ -701,8 +698,7 @@ more information on modifiers."
 #+BEGIN_SRC emacs-lisp
 
 (use-package evil-numbers
-  :after evil
-  :straight (:host github :repo "janpath/evil-numbers"))
+    :straight (:host github :repo "janpath/evil-numbers"))
 
 #+END_SRC
 
@@ -716,8 +712,7 @@ more information on modifiers."
 #+BEGIN_SRC emacs-lisp
 
 (use-package evil-snipe
-  :after evil
-  :commands (evil-snipe-mode evil-snipe-override-mode
+    :commands (evil-snipe-mode evil-snipe-override-mode
              evil-snipe-local-mode evil-snipe-override-local-mode)
   :init
   (setq evil-snipe-smart-case t
@@ -734,8 +729,7 @@ more information on modifiers."
 #+BEGIN_SRC emacs-lisp
 
 (use-package evil-surround
-  :after evil
-  :commands (global-evil-surround-mode
+    :commands (global-evil-surround-mode
              evil-surround-edit
              evil-Surround-edit
              evil-surround-region)
@@ -746,28 +740,28 @@ more information on modifiers."
 #+BEGIN_SRC emacs-lisp
 
 (use-package evil-visualstar
-  :after evil
-  :commands (evil-visualstar/begin-search
-             evil-visualstar/begin-search-forward
-             evil-visualstar/begin-search-backward)
-  :init
-  (evil-define-key* 'visual 'global
-    "*" #'evil-visualstar/begin-search-forward
-    "#" #'evil-visualstar/begin-search-backward))
+    :after evil
+    :commands
+    (evil-visualstar/begin-search
+        evil-visualstar/begin-search-forward
+        evil-visualstar/begin-search-backward)
+    :init
+    (evil-define-key* 'visual 'global
+        "*" #'evil-visualstar/begin-search-forward
+        "#" #'evil-visualstar/begin-search-backward))
 
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
 
 (use-package exato
-  :after evil
-  :commands (evil-outer-xml-attr evil-inner-xml-attr))
+    :commands (evil-outer-xml-attr evil-inner-xml-attr))
 
 #+END_SRC
 
 *** Keybinds
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (with-eval-after-load 'evil
   (evil-ex-define-cmd "ag"        #'+ivy:ag)
   (evil-ex-define-cmd "agc[wd]"   #'+ivy:ag-from-cwd)
@@ -779,15 +773,15 @@ more information on modifiers."
   (evil-ex-define-cmd "grepc[wd]" #'+ivy:grep-from-cwd)
   (evil-ex-define-cmd "sw[iper]"  #'+ivy:swipe)
   (evil-ex-define-cmd "todo"      #'+ivy:todo))
-#+END_SRC
+    #+END_SRC
 
 * User interface
 
 ** Theme
 
-Load theme
+   Load theme
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (defvar load-theme-hook '())
 (use-package doom-themes
     :demand t
@@ -796,15 +790,15 @@ Load theme
     (doom-themes-enable-italic t)
     :config
     (load-theme 'doom-vibrant t))
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons)
-#+END_SRC
+   #+END_SRC
 
-Loads solaire mode to dynamically darken/lighten focused windows
+   Loads solaire mode to dynamically darken/lighten focused windows
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package solaire-mode
   :defer t
   :preface
@@ -824,13 +818,13 @@ Loads solaire mode to dynamically darken/lighten focused windows
   :config
   (solaire-global-mode +1)
   (solaire-mode-swap-bg))
-#+END_SRC
+   #+END_SRC
 
 ** Mode-Line
 
-Mode line
+   Mode line
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package doom-modeline
     :custom
     (find-file-visit-truename t)
@@ -850,11 +844,11 @@ Mode line
     (theme-load . doom-modeline-refresh-bars)
     (doom-modeline-mode . size-indication-mode) ; filesize in modeline
     (doom-modeline-mode . column-number-mode)) ; cursor column in modeline
-#+END_SRC
+   #+END_SRC
 
-Modeline for magit
+   Modeline for magit
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package hide-mode-line
   :config
   (defun +modeline|hide-in-non-status-buffer ()
@@ -864,15 +858,15 @@ Modeline for magit
       (hide-mode-line-mode))))
 ;; (add-hook 'magit-mode-hook #'+modeline|hide-in-non-status-buffer)
       ;; (magit-mode . #'+modeline|hide-in-non-status-buffer))
-#+END_SRC
+   #+END_SRC
 
 ** Bars
 
 *** Sidebar
 
-For when you need to go explorin'
+    For when you need to go explorin'
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package treemacs
     :defer t
     :custom
@@ -889,9 +883,9 @@ For when you need to go explorin'
             (concat my/cache-dir
             "treemacs-persist-at-last-error")))
     (doom-themes-treemacs-config))
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package treemacs-projectile
     :requires (treemacs projectile)
     :after (treemacs projectile)
@@ -901,12 +895,12 @@ For when you need to go explorin'
     :requires (treemacs evil)
     :after (treemacs magit)
     :defer t)
-#+END_SRC
+    #+END_SRC
 
 *** Tabs
 
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 
 (use-package centaur-tabs
     :config
@@ -932,7 +926,7 @@ For when you need to go explorin'
             ("g t" . centaur-tabs-forward)
             ("g T" . centaur-tabs-backward)))
 
-#+END_SRC
+    #+END_SRC
 
 
 
@@ -940,29 +934,29 @@ For when you need to go explorin'
 
 *** Linenumbers
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (add-hook 'org-mode-hook 'display-line-numbers-mode)
 (add-hook 'fundamental-mode-hook 'display-line-numbers-mode)
-#+END_SRC
+    #+END_SRC
 
 
 *** End of buffer
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package vi-tilde-fringe
     :config
     (add-hook 'prog-mode-hook vi-tilde-fringe-mode)
     (add-hook 'text-mode-hook vi-tilde-fringe-mode)
     (add-hook 'fundamental-mode-hook vi-tilde-fringe-mode))
-#+END_SRC
+    #+END_SRC
 
 
 * Languages
 
 ** CSS
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package css-mode
   :custom (css-indent-offset 2))
 
@@ -973,26 +967,26 @@ For when you need to go explorin'
     (setq-local comment-start "//"))
   :mode ("\\.sass\\'" "\\.scss\\'")
   :hook (scss-mode . me/scss-set-comment-style))
-#+END_SRC
+   #+END_SRC
 
 ** CSV
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package csv-mode
   :config (setq-default csv-align-padding 2))
-#+END_SRC
+   #+END_SRC
 
 ** Docker
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package dockerfile-mode :mode "Dockerfile\\'")
-#+END_SRC
+   #+END_SRC
 
 ** HTML
 
-HTML mode is defined in =sgml-mode.el=.
+   HTML mode is defined in =sgml-mode.el=.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package sgml-mode
   :preface
   (defun me/html-set-pretty-print-function ()
@@ -1004,14 +998,14 @@ HTML mode is defined in =sgml-mode.el=.
    (html-mode . toggle-truncate-lines))
   :custom
   (sgml-basic-offset 2))
-#+END_SRC
+   #+END_SRC
 
 ** JavaScript
 
-- *TOFIX*: Indent level is broken
-           (https://github.com/joshwnj/json-mode/issues/32).
+   - *TOFIX*: Indent level is broken
+     (https://github.com/joshwnj/json-mode/issues/32).
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package js
   :preface
   (defun me/js-prettify-symbols-mode-on ()
@@ -1062,26 +1056,26 @@ HTML mode is defined in =sgml-mode.el=.
 
 (use-package web-mode
   :custom (web-mode-enable-auto-indentation nil))
-#+END_SRC
+   #+END_SRC
 
 ** Lisp
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package ielm
   :hook (ielm-mode . (lambda () (setq-local scroll-margin 0))))
-#+END_SRC
+   #+END_SRC
 
 ** Elisp
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (add-hook 'emacs-lisp-mode-hook 'prettify-symbols-mode)
 
 
-#+END_SRC
+   #+END_SRC
 
 ** Markdown
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package markdown-mode
   :preface
   (defun me/markdown-set-ongoing-hydra-body ()
@@ -1101,21 +1095,21 @@ HTML mode is defined in =sgml-mode.el=.
   :config
   (unbind-key "M-<down>" markdown-mode-map)
   (unbind-key "M-<up>" markdown-mode-map))
-#+END_SRC
+   #+END_SRC
 
 ** Org
 
-This very file is organized with =org-mode=. I am definitely not a power user of
-Org, but I'm getting there. :-)
+   This very file is organized with =org-mode=. I am definitely not a power user of
+   Org, but I'm getting there. :-)
 
-#+BEGIN_QUOTE
-Org mode is for keeping notes, maintaining TODO lists, planning projects, and
-authoring documents with a fast and effective plain-text system.
+   #+BEGIN_QUOTE
+   Org mode is for keeping notes, maintaining TODO lists, planning projects, and
+   authoring documents with a fast and effective plain-text system.
 
-[[http://orgmode.org/][Carsten Dominik]]
-#+END_QUOTE
+   [[http://orgmode.org/][Carsten Dominik]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package org
   :preface
   (defun me/org-src-buffer-name (org-buffer-name language)
@@ -1150,11 +1144,11 @@ authoring documents with a fast and effective plain-text system.
   :config
   (advice-add 'org-src--construct-edit-buffer-name :override #'me/org-src-buffer-name)
   (doom-themes-org-config))
-#+END_SRC
+   #+END_SRC
 
-Display the current Org header in the header-line.
+   Display the current Org header in the header-line.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package org-sticky-header
   :custom
   (org-sticky-header-full-path 'full)
@@ -1163,20 +1157,20 @@ Display the current Org header in the header-line.
   (setq-default
    org-sticky-header-header-line-format
    '(:eval (setq org-sticky-header-stickyline (concat " " (org-sticky-header--fetch-stickyline))))))
-#+END_SRC
+   #+END_SRC
 
-Tired of having to manually update your tables of contents? This package will
-maintain a TOC at the first heading that has a =:TOC:= tag.
+   Tired of having to manually update your tables of contents? This package will
+   maintain a TOC at the first heading that has a =:TOC:= tag.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package toc-org :after org)
-#+END_SRC
+   #+END_SRC
 
 ** Python
 
-- *TODO*: Fix for =ipython= 5.1.0.
+   - *TODO*: Fix for =ipython= 5.1.0.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package python
   :hook (python-mode . turn-on-prettify-symbols-mode)
   :config
@@ -1192,45 +1186,45 @@ maintain a TOC at the first heading that has a =:TOC:= tag.
      "';'.join(module_completion('''%s'''))\n"
      python-shell-completion-string-code
      "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")))
-#+END_SRC
+   #+END_SRC
 
 ** YAML
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package yaml-mode :mode "\\.yml\\'")
-#+END_SRC
+   #+END_SRC
 
 * Features
 
 ** Alert
 
-#+BEGIN_QUOTE
-Alert is a Growl-workalike for Emacs which uses a common notification interface
-and multiple, selectable "styles", whose use is fully customizable by the user.
+   #+BEGIN_QUOTE
+   Alert is a Growl-workalike for Emacs which uses a common notification interface
+   and multiple, selectable "styles", whose use is fully customizable by the user.
 
-[[https://github.com/jwiegley/alert][John Wiegley]]
-#+END_QUOTE
+   [[https://github.com/jwiegley/alert][John Wiegley]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package alert
   :config
   (when (eq system-type 'darwin)
     (setq-default alert-default-style 'osx-notifier)))
-#+END_SRC
+   #+END_SRC
 
 ** Auto-Completion
 
-Auto-completion at point. Display a small pop-in containing the candidates.
+   Auto-completion at point. Display a small pop-in containing the candidates.
 
-#+BEGIN_QUOTE
-Company is a text completion framework for Emacs. The name stands for "complete
-anything". It uses pluggable back-ends and front-ends to retrieve and display
-completion candidates.
+   #+BEGIN_QUOTE
+   Company is a text completion framework for Emacs. The name stands for "complete
+   anything". It uses pluggable back-ends and front-ends to retrieve and display
+   completion candidates.
 
-[[http://company-mode.github.io/][Dmitry Gutov]]
-#+END_QUOTE
+   [[http://company-mode.github.io/][Dmitry Gutov]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package company
   :bind
   (:map company-active-map
@@ -1247,22 +1241,22 @@ completion candidates.
   (company-minimum-prefix-length 1)
   (company-require-match nil)
   (company-tooltip-align-annotations t))
-#+END_SRC
+   #+END_SRC
 
 ** Buffers and Windows
 
-Don't ask before killing a buffer. I'm a consenting adult.
+   Don't ask before killing a buffer. I'm a consenting adult.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (global-set-key [remap kill-buffer] #'kill-this-buffer)
-#+END_SRC
+   #+END_SRC
 
-Allow repeated use of =←= and =→= when using =previous-buffer= and
-=next-buffer=.
+   Allow repeated use of =←= and =→= when using =previous-buffer= and
+   =next-buffer=.
 
-- *TODO*: Make a hydra.
+   - *TODO*: Make a hydra.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (defun me/switch-to-buffer-continue ()
   "Activate a sparse keymap:
   <left>   `previous-buffer'
@@ -1274,32 +1268,32 @@ Allow repeated use of =←= and =→= when using =previous-buffer= and
      map)))
 (advice-add 'previous-buffer :after #'me/switch-to-buffer-continue)
 (advice-add 'next-buffer :after #'me/switch-to-buffer-continue)
-#+END_SRC
+   #+END_SRC
 
-Save and restore Emacs status, including buffers, point and window configurations.
+   Save and restore Emacs status, including buffers, point and window configurations.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package desktop
   :init
   (make-directory desktop-dirname :parents)
   :hook
   (after-init . desktop-read)
   (after-init . desktop-save-mode))
-#+END_SRC
+   #+END_SRC
 
-Workspaces within Emacs.
+   Workspaces within Emacs.
 
-#+BEGIN_QUOTE
-=eyebrowse= is a global minor mode for Emacs that allows you to manage your
-window configurations in a simple manner, just like tiling window managers like
-i3wm with their workspaces do. It displays their current state in the modeline
-by default. The behaviour is modeled after
-[[http://ranger.nongnu.org/][ranger]], a file manager written in Python.
+   #+BEGIN_QUOTE
+   =eyebrowse= is a global minor mode for Emacs that allows you to manage your
+   window configurations in a simple manner, just like tiling window managers like
+   i3wm with their workspaces do. It displays their current state in the modeline
+   by default. The behaviour is modeled after
+   [[http://ranger.nongnu.org/][ranger]], a file manager written in Python.
 
-[[https://github.com/wasamasa/eyebrowse][Vasilij Schneidermann]]
-#+END_QUOTE
+   [[https://github.com/wasamasa/eyebrowse][Vasilij Schneidermann]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package eyebrowse
   :bind
   ("<f5>" . eyebrowse-switch-to-window-config-1)
@@ -1310,97 +1304,97 @@ by default. The behaviour is modeled after
   (after-init . eyebrowse-mode)
   :custom
   (eyebrowse-new-workspace t))
-#+END_SRC
+   #+END_SRC
 
-Window management.
+   Window management.
 
-- *TODO*: Shackle Magit.
+   - *TODO*: Shackle Magit.
 
-#+BEGIN_QUOTE
-=shackle= gives you the means to put an end to popped up buffers not behaving they
-way you'd like them to. By setting up simple rules you can for instance make
-Emacs always select help buffers for you or make everything reuse your currently
-selected window.
+   #+BEGIN_QUOTE
+   =shackle= gives you the means to put an end to popped up buffers not behaving they
+   way you'd like them to. By setting up simple rules you can for instance make
+   Emacs always select help buffers for you or make everything reuse your currently
+   selected window.
 
-[[https://github.com/wasamasa/shackle][Vasilij Schneidermann]]
-#+END_QUOTE
+   [[https://github.com/wasamasa/shackle][Vasilij Schneidermann]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package shackle
   :hook
   (after-init . shackle-mode)
   :custom
   (shackle-rules '((help-mode :inhibit-window-quit t :same t)))
   (shackle-select-reused-windows t))
-#+END_SRC
+   #+END_SRC
 
-Bind commands to move around windows.
+   Bind commands to move around windows.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package windmove
   :bind
   (("C-M-<left>". windmove-left)
    ("C-M-<right>". windmove-right)
    ("C-M-<up>". windmove-up)
    ("C-M-<down>". windmove-down)))
-#+END_SRC
+   #+END_SRC
 
-Allow undo's and redo's with window configurations.
+   Allow undo's and redo's with window configurations.
 
-#+BEGIN_QUOTE
-Winner mode is a global minor mode that records the changes in the window
-configuration (i.e. how the frames are partitioned into windows) so that the
-changes can be "undone" using the command =winner-undo=.  By default this one is
-bound to the key sequence ctrl-c left.  If you change your mind (while undoing),
-you can press ctrl-c right (calling =winner-redo=).
+   #+BEGIN_QUOTE
+   Winner mode is a global minor mode that records the changes in the window
+   configuration (i.e. how the frames are partitioned into windows) so that the
+   changes can be "undone" using the command =winner-undo=.  By default this one is
+   bound to the key sequence ctrl-c left.  If you change your mind (while undoing),
+   you can press ctrl-c right (calling =winner-redo=).
 
-[[https://github.com/emacs-mirror/emacs/blob/master/lisp/winner.el][Ivar Rummelhoff]]
-#+END_QUOTE
+   [[https://github.com/emacs-mirror/emacs/blob/master/lisp/winner.el][Ivar Rummelhoff]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package winner
   :hook (after-init . winner-mode))
-#+END_SRC
+   #+END_SRC
 
 ** Daemon
 
-This package let us start a server to edit editable elements in a Chrome browser
-from Emacs.
+   This package let us start a server to edit editable elements in a Chrome browser
+   from Emacs.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package edit-server
   :hook (after-init . edit-server-start))
-#+END_SRC
+   #+END_SRC
 
-Emacs can be run as a daemon onto which Emacs clients can latch on. This allows
-for much shorter starting times when you already got Emacs running ie. when you
-want to edit a single file for a quick edit.
+   Emacs can be run as a daemon onto which Emacs clients can latch on. This allows
+   for much shorter starting times when you already got Emacs running ie. when you
+   want to edit a single file for a quick edit.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package server
   :hook (after-init . server-start))
-#+END_SRC
+   #+END_SRC
 
 ** Dictionary
 
-Define words using Wordnik.
+   Define words using Wordnik.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package define-word)
-#+END_SRC
+   #+END_SRC
 
-Translage using Google.
+   Translage using Google.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package google-translate)
-#+END_SRC
+   #+END_SRC
 
 ** Dired
 
-Configure Dired buffers. Amongst many other things, Emacs is also a file
-explorer.
+   Configure Dired buffers. Amongst many other things, Emacs is also a file
+   explorer.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package dired
   :straight (dired :type built-in)
   :preface
@@ -1422,15 +1416,15 @@ explorer.
   (dired-recursive-copies 'always)
   :config
   (advice-add 'dired-readin :after #'me/dired-directories-first))
-#+END_SRC
+   #+END_SRC
 
 ** Expand
 
-HippieExpand manages expansions a la [[http://emmet.io/][Emmet]]. So I've
-gathered all features that look anywhere close to this behavior for it to handle
-under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
+   HippieExpand manages expansions a la [[http://emmet.io/][Emmet]]. So I've
+   gathered all features that look anywhere close to this behavior for it to handle
+   under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package emmet-mode
   :bind
   (:map emmet-mode-keymap
@@ -1476,14 +1470,14 @@ under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
 
 (use-package yasnippet-snippets)
 
-#+END_SRC
+   #+END_SRC
 
 ** Completion
 
 *** Ivy
 
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package ivy
     :defer t
     :init
@@ -1560,15 +1554,15 @@ under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
         ;; ivy-hydra rebinds this, so we have to do so again
         (define-key ivy-minibuffer-map (kbd "M-o") #'hydra-ivy/body)))
 
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package amx
     :config
     (setq amx-save-file (concat my/cache-dir "amx-items")))
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package counsel
   :commands counsel-describe-face
   :init
@@ -1639,9 +1633,9 @@ under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
   (ivy-add-actions
    'counsel-ag ; also applies to `counsel-rg' & `counsel-pt'
    '(("O" +ivy-git-grep-other-window-action "open in other window"))))
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package counsel-projectile
   :defer t
   :init
@@ -1654,17 +1648,17 @@ under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
   :config
   ;; no highlighting visited files; slows down the filtering
   (ivy-set-display-transformer #'counsel-projectile-find-file nil))
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package swiper)
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package ivy-hydra)
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package ivy-prescient
   :hook (ivy-mode . ivy-prescient-mode)
   :init
@@ -1691,9 +1685,9 @@ under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
   ;; NOTE prescient config duplicated with `company'
   (setq prescient-save-file (concat my/cache-dir "prescient-save.el"))
   (prescient-persist-mode +1))
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package ivy-rich
     :after ivy
     :config
@@ -1729,15 +1723,15 @@ under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
 
     ;; Reload ivy which so changes to `ivy-rich-display-transformers-list' work
     (ivy-rich-mode +1))
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package wgrep
   :commands wgrep-change-to-wgrep-mode
   :config (setq wgrep-auto-save-buffer t))
-#+END_SRC
+    #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons-ivy
   :after ivy
   :config
@@ -1751,37 +1745,37 @@ under the same bind, that is =<C-return>=. Basically it's an expand DWIM.
                                              counsel-projectile-find-file
                                              counsel-projectile-find-dir)))
       (all-the-icons-ivy-setup))))
-#+END_SRC
+    #+END_SRC
 
 ** Help
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package help-mode
   :straight (help-mode :type built-in)
   :bind
   (:map help-mode-map
         ("<" . help-go-back)
         (">" . help-go-forward)))
-#+END_SRC
+   #+END_SRC
 
 ** Hydra
 
-Hydra allows me to group binds together. It also shows a list of all implemented
-commands in the echo area.
+   Hydra allows me to group binds together. It also shows a list of all implemented
+   commands in the echo area.
 
-#+BEGIN_QUOTE
-Once you summon the Hydra through the prefixed binding (the body + any one
-head), all heads can be called in succession with only a short extension.
+   #+BEGIN_QUOTE
+   Once you summon the Hydra through the prefixed binding (the body + any one
+   head), all heads can be called in succession with only a short extension.
 
-The Hydra is vanquished once Hercules, any binding that isn't the Hydra's head,
-arrives. Note that Hercules, besides vanquishing the Hydra, will still serve his
-original purpose, calling his proper command. This makes the Hydra very
-seamless, it's like a minor mode that disables itself auto-magically.
+   The Hydra is vanquished once Hercules, any binding that isn't the Hydra's head,
+   arrives. Note that Hercules, besides vanquishing the Hydra, will still serve his
+   original purpose, calling his proper command. This makes the Hydra very
+   seamless, it's like a minor mode that disables itself auto-magically.
 
-[[https://github.com/abo-abo/hydra][Oleh Krehel]]
-#+END_QUOTE
+   [[https://github.com/abo-abo/hydra][Oleh Krehel]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package hydra
   :preface
   (defvar-local me/ongoing-hydra-body nil)
@@ -1803,13 +1797,13 @@ seamless, it's like a minor mode that disables itself auto-magically.
   ("C-c w" . hydra-windows/body)
   :custom
   (hydra-default-hint nil))
-#+END_SRC
+   #+END_SRC
 
 *** Hydra / Dates
 
-Group date-related commands.
+    Group date-related commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-dates (:color blue)
   "
 ^
@@ -1827,15 +1821,15 @@ _q_ quit            _d_ short           _D_ short
   ("I" me/date-iso-with-time)
   ("l" me/date-long)
   ("L" me/date-long-with-time))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.dates.png]]
+    [[./screenshots/hydra.dates.png]]
 
 *** Hydra / Eyebrowse
 
-Group Eyebrowse commands.
+    Group Eyebrowse commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-eyebrowse (:color blue)
   "
 ^
@@ -1855,15 +1849,15 @@ _q_ quit            _c_ create          _<_ previous
   ("k" eyebrowse-close-window-config :color red)
   ("r" eyebrowse-rename-window-config)
   ("s" eyebrowse-switch-to-window-config))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.eyebrowse.png]]
+    [[./screenshots/hydra.eyebrowse.png]]
 
 *** Hydra / Flycheck
 
-Group Flycheck commands.
+    Group Flycheck commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-flycheck (:color pink)
   "
 ^
@@ -1885,17 +1879,17 @@ _v_ verify setup    _f_ check           _s_ select
   ("m" flycheck-manual :color blue)
   ("s" flycheck-select-checker :color blue)
   ("v" flycheck-verify-setup :color blue))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.flycheck.png]]
+    [[./screenshots/hydra.flycheck.png]]
 
 *** Hydra / Helm
 
-Group Helm commands.
+    Group Helm commands.
 
-- *TODO*: Make =helm-mdi=.
+    - *TODO*: Make =helm-mdi=.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-helm (:color blue)
   "
 ^
@@ -1913,15 +1907,15 @@ _r_ resume          _g_ google
   ("i" helm-imenu)
   ("k" helm-show-kill-ring)
   ("r" helm-resume))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.helm.png]]
+    [[./screenshots/hydra.helm.png]]
 
 *** Hydra / Magit
 
-Group Magit commands.
+    Group Magit commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-magit (:color blue)
   "
 ^
@@ -1938,15 +1932,15 @@ _q_ quit            _b_ blame
   ("c" magit-clone)
   ("i" magit-init)
   ("s" magit-status))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.magit.png]]
+    [[./screenshots/hydra.magit.png]]
 
 *** Hydra / Markdown
 
-Group Markdown commands.
+    Group Markdown commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-markdown (:color pink)
   "
 ^
@@ -1967,15 +1961,15 @@ _q_ quit            _c_ insert          _r_ insert
   ("M-<right>" markdown-table-move-column-right)
   ("M-<down>" markdown-table-move-row-down)
   ("M-<up>" markdown-table-move-row-up))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.markdown.png]]
+    [[./screenshots/hydra.markdown.png]]
 
 *** Hydra / Org
 
-Group Org commands.
+    Group Org commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-org (:color pink)
   "
 ^
@@ -1998,15 +1992,15 @@ _q_ quit            _i_ insert          _<_ previous
   ("p" org-previous-link)
   ("s" org-store-link)
   ("v" org-overview))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.org.png]]
+    [[./screenshots/hydra.org.png]]
 
 *** Hydra / Projectile
 
-Group Projectile commands.
+    Group Projectile commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-projectile (:color blue)
   "
 ^
@@ -2030,15 +2024,15 @@ _i_ reset cache     _K_ kill all        _D_ root            _R_ regexp replace
   ("R" projectile-replace-regexp)
   ("s" helm-projectile-ag)
   ("S" projectile-save-project-buffers))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.projectile.png]]
+    [[./screenshots/hydra.projectile.png]]
 
 *** Hydra / RJSX
 
-Group React JavaScript commands.
+    Group React JavaScript commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-rjsx (:color pink)
   "
 ^
@@ -2048,15 +2042,15 @@ _q_ quit
 ^^
 "
   ("q" nil))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.rjsx.png]]
+    [[./screenshots/hydra.rjsx.png]]
 
 *** Hydra / System
 
-Group system-related commands.
+    Group system-related commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-system (:color blue)
   "
 ^
@@ -2073,15 +2067,15 @@ _q_ quit            _p_ list            _s_ list            _e_ eshell
   ("s" list-processes)
   ("t" term)
   ("T" ansi-term))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.system.png]]
+    [[./screenshots/hydra.system.png]]
 
 *** Hydra / Windows
 
-Group window-related commands.
+    Group window-related commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (defhydra hydra-windows (:color pink)
   "
 ^
@@ -2103,15 +2097,15 @@ _q_ quit            _b_ balance         _-_ out
   ("-" text-scale-decrease)
   ("+" text-scale-increase)
   ("=" (text-scale-increase 0)))
-#+END_SRC
+    #+END_SRC
 
-[[./screenshots/hydra.windows.png]]
+    [[./screenshots/hydra.windows.png]]
 
 ** IRC
 
-- *TODO*: Display the current count of users. =(hash-table-count erc-channel-users)=
+   - *TODO*: Display the current count of users. =(hash-table-count erc-channel-users)=
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package erc
   :preface
   (defun me/erc ()
@@ -2155,15 +2149,15 @@ _q_ quit            _b_ balance         _-_ out
   :config
   (make-variable-buffer-local 'erc-fill-column)
   (erc-scrolltobottom-enable))
-#+END_SRC
+   #+END_SRC
 
 ** Linters
 
-Flycheck lints warnings and errors directly within buffers. It can check a lot
-of different syntaxes, as long as you make sure that Emacs has access to the
-binaries (see [[./README.org][README.org]]).
+   Flycheck lints warnings and errors directly within buffers. It can check a lot
+   of different syntaxes, as long as you make sure that Emacs has access to the
+   binaries (see [[./README.org][README.org]]).
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package flycheck
   :hook
   ((css-mode . flycheck-mode)
@@ -2174,15 +2168,15 @@ binaries (see [[./README.org][README.org]]).
   (flycheck-check-syntax-automatically '(save mode-enabled))
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc))
   (flycheck-display-errors-delay .3))
-#+END_SRC
+   #+END_SRC
 
 ** Navigation
 
 *** Navigation / Inline
 
-Smarter =C-a=.
+    Smarter =C-a=.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (global-set-key [remap move-beginning-of-line] #'me/beginning-of-line-dwim)
 
 (defun me/beginning-of-line-dwim ()
@@ -2192,16 +2186,16 @@ Smarter =C-a=.
     (beginning-of-line)
     (and (= origin (point))
          (back-to-indentation))))
-#+END_SRC
+    #+END_SRC
 
 *** Navigation / Paragraphs
 
-I disagree with Emacs' definition of paragraphs so I redefined the way it should
-jump from one paragraph to another.
+    I disagree with Emacs' definition of paragraphs so I redefined the way it should
+    jump from one paragraph to another.
 
-- *TOFIX*: Ignore invisible text.
+    - *TOFIX*: Ignore invisible text.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 ;; (global-set-key [remap backward-paragraph] #'me/backward-paragraph-dwim)
 ;; (global-set-key [remap forward-paragraph] #'me/forward-paragraph-dwim)
 
@@ -2220,32 +2214,32 @@ jump from one paragraph to another.
   (unless (search-forward-regexp "\n[[:blank:]]*\n" nil t)
     (goto-char (point-max)))
   (skip-chars-forward "\n"))
-#+END_SRC
+    #+END_SRC
 
 *** Navigation / Pulse
 
-Pulse temporarily highlights the background color of a line or region.
+    Pulse temporarily highlights the background color of a line or region.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package pulse :ensure nil)
-#+END_SRC
+    #+END_SRC
 
 *** Navigation / Replace
 
-Better search and replace features. Even though I prefer to use
-=multiple-cursors= to replace text in different places at once, =anzu= has a
-nice feedback on regexp matches.
+    Better search and replace features. Even though I prefer to use
+    =multiple-cursors= to replace text in different places at once, =anzu= has a
+    nice feedback on regexp matches.
 
-#+BEGIN_QUOTE
-=anzu.el= is an Emacs port of
-[[https://github.com/osyo-manga/vim-anzu][anzu.vim]]. =anzu.el= provides a minor
-mode which displays /current match/ and /total matches/ information in the
-mode-line in various search modes.
+    #+BEGIN_QUOTE
+    =anzu.el= is an Emacs port of
+    [[https://github.com/osyo-manga/vim-anzu][anzu.vim]]. =anzu.el= provides a minor
+    mode which displays /current match/ and /total matches/ information in the
+    mode-line in various search modes.
 
-[[https://github.com/syohex/emacs-anzu][Syohei Yoshida]]
-#+END_QUOTE
+    [[https://github.com/syohex/emacs-anzu][Syohei Yoshida]]
+    #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package anzu
     :bind
     ([remap query-replace] . anzu-query-replace-regexp)
@@ -2253,22 +2247,22 @@ mode-line in various search modes.
     (after-init . global-anzu-mode)
     :custom
     (anzu-cons-mode-line-p nil))
-#+END_SRC
+    #+END_SRC
 
 **** Evil
-#+BEGIN_SRC emacs-lisp
+     #+BEGIN_SRC emacs-lisp
 (use-package evil-anzu
     :after (evil anzu))
-#+END_SRC
+     #+END_SRC
 
 
 *** Navigation / Scroll
 
-Enable horizontal scroll.
+    Enable horizontal scroll.
 
-- *TODO*: Scroll the window under cursor instead of where point is.
+    - *TODO*: Scroll the window under cursor instead of where point is.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (put 'scroll-left 'disabled nil)
 (defun me/scroll-left ()
   (interactive)
@@ -2280,26 +2274,26 @@ Enable horizontal scroll.
 (global-set-key (kbd "<wheel-right>") #'me/scroll-left)
 (global-set-key (kbd "S-<wheel-down>") #'me/scroll-left)
 (global-set-key (kbd "S-<wheel-up>") #'me/scroll-right)
-#+END_SRC
+    #+END_SRC
 
-Configure the mouse scroll.
+    Configure the mouse scroll.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package mwheel
   :straight (mwheel :type built-in)
   :custom
   (mouse-wheel-progressive-speed nil)
   (mouse-wheel-scroll-amount '(1 ((control) . 5))))
-#+END_SRC
+    #+END_SRC
 
 *** Navigation / Search
 
-Isearch stands for /incremental search/. This means that search results are
-highlighted while you are typing your query, incrementally. Since he who can do
-more can do less, I've replaced default bindings with the regexp-equivalent
-commands.
+    Isearch stands for /incremental search/. This means that search results are
+    highlighted while you are typing your query, incrementally. Since he who can do
+    more can do less, I've replaced default bindings with the regexp-equivalent
+    commands.
 
-#+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 (use-package isearch
     :straight (mwheel :type built-in)
     :defer t
@@ -2317,69 +2311,70 @@ commands.
         isearch-allow-scroll t
         lazy-highlight-cleanup nil
         lazy-highlight-initial-delay 0))
-#+END_SRC
+    #+END_SRC
 
 ** Parentheses
 
-Highlight parenthese-like delimiters in a rainbow fashion. It ease the reading
-when dealing with mismatched parentheses.
+   Highlight parenthese-like delimiters in a rainbow fashion. It ease the reading
+   when dealing with mismatched parentheses.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
-#+END_SRC
+   #+END_SRC
 
-I am still looking for the perfect parenthesis management setup as of
-today... No package seem to please my person.
+   I am still looking for the perfect parenthesis management setup as of
+   today... No package seem to please my person.
 
-#+BEGIN_SRC emacs-lisp
-(use-package smartparens
-  :hook
-  (after-init . smartparens-global-mode)
-  :custom
-  (sp-highlight-pair-overlay nil)
-  (sp-highlight-wrap-overlay nil)
-  (sp-highlight-wrap-tag-overlay nil)
-  :config
-  (show-paren-mode 0)
-  (require 'smartparens-config))
-#+END_SRC
+   #+BEGIN_SRC emacs-lisp
+   (use-package smartparens
+     :custom
+     (sp-show-pair-delay 0.25)
+     ;; (sp-highlight-pair-overlay nil)
+     ;; (sp-highlight-wrap-overlay nil)
+     ;; (sp-highlight-wrap-tag-overlay nil)
+     :config
+     (show-paren-mode 0)
+     (require 'smartparens-config)
+     (show-smartparens-global-mode t)
+     (smartparens-global-mode +1))
+   #+END_SRC
 
 ** Paste
 
-#+BEGIN_QUOTE
-This mode allows to paste whole buffers or parts of buffers to pastebin-like
-services. It supports more than one service and will failover if one service
-fails.
+   #+BEGIN_QUOTE
+   This mode allows to paste whole buffers or parts of buffers to pastebin-like
+   services. It supports more than one service and will failover if one service
+   fails.
 
-[[https://github.com/etu/webpaste.el][Elis Hirwing]]
-#+END_QUOTE
+   [[https://github.com/etu/webpaste.el][Elis Hirwing]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package webpaste
     :defer t
     :config
     (setq webpaste-provider-priority '("gist.github.com" "ix.io" "dpaste.de"))
     (setq webpaste-paste-confirmation t))
-#+END_SRC
+   #+END_SRC
 
 ** Projectile
 
-Projectile brings project-level facilities to Emacs such as grep, find and
-replace.
+   Projectile brings project-level facilities to Emacs such as grep, find and
+   replace.
 
-#+BEGIN_QUOTE
-Projectile is a project interaction library for Emacs. Its goal is to provide a
-nice set of features operating on a project level without introducing external
-dependencies (when feasible). For instance - finding project files has a
-portable implementation written in pure Emacs Lisp without the use of GNU find
-(but for performance sake an indexing mechanism backed by external commands
-exists as well).
+   #+BEGIN_QUOTE
+   Projectile is a project interaction library for Emacs. Its goal is to provide a
+   nice set of features operating on a project level without introducing external
+   dependencies (when feasible). For instance - finding project files has a
+   portable implementation written in pure Emacs Lisp without the use of GNU find
+   (but for performance sake an indexing mechanism backed by external commands
+   exists as well).
 
-[[https://github.com/bbatsov/projectile][Bozhidar Batsov]]
-#+END_QUOTE
+   [[https://github.com/bbatsov/projectile][Bozhidar Batsov]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package projectile
   :hook
   (after-init . projectile-global-mode)
@@ -2390,25 +2385,25 @@ exists as well).
   :custom
   (projectile-completion-system 'ivy)
   (projectile-enable-caching t))
-#+END_SRC
+   #+END_SRC
 
 ** Quality of Life
 
-Auto-indent code as you write.
+   Auto-indent code as you write.
 
-#+BEGIN_QUOTE
-=electric-indent-mode= is enough to keep your code nicely aligned when all you
-do is type. However, once you start shifting blocks around, transposing lines,
-or slurping and barfing sexps, indentation is bound to go wrong.
+   #+BEGIN_QUOTE
+   =electric-indent-mode= is enough to keep your code nicely aligned when all you
+   do is type. However, once you start shifting blocks around, transposing lines,
+   or slurping and barfing sexps, indentation is bound to go wrong.
 
-=aggressive-indent-mode= is a minor mode that keeps your code *always* indented.
-It reindents after every change, making it more reliable than
-electric-indent-mode.
+   =aggressive-indent-mode= is a minor mode that keeps your code *always* indented.
+   It reindents after every change, making it more reliable than
+   electric-indent-mode.
 
-[[https://github.com/Malabarba/aggressive-indent-mode][Artur Malabarba]]
-#+END_QUOTE
+   [[https://github.com/Malabarba/aggressive-indent-mode][Artur Malabarba]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package aggressive-indent
   :preface
   (defun me/aggressive-indent-mode-off ()
@@ -2423,11 +2418,11 @@ electric-indent-mode.
   (aggressive-indent-comments-too t)
   :config
   (add-to-list 'aggressive-indent-protected-commands 'comment-dwim))
-#+END_SRC
+   #+END_SRC
 
-Insert the current date.
+   Insert the current date.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (defun me/date-iso ()
   "Insert the current date, ISO format, eg. 2016-12-09."
   (interactive)
@@ -2457,19 +2452,19 @@ Insert the current date.
   "Insert the current date, short format with time, eg. 2016.12.09 14:34"
   (interactive)
   (insert (format-time-string "%Y.%m.%d %H:%M")))
-#+END_SRC
+   #+END_SRC
 
-Disable documentation for object at point in the echo area. It conflicts with Flycheck.
+   Disable documentation for object at point in the echo area. It conflicts with Flycheck.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package eldoc
   :straight (eldoc :type built-in)
   :config (global-eldoc-mode -1))
-#+END_SRC
+   #+END_SRC
 
-Add visual guides towards indenting levels.
+   Add visual guides towards indenting levels.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package highlight-indent-guides
   :hook
   (python-mode . highlight-indent-guides-mode)
@@ -2490,11 +2485,11 @@ Add visual guides towards indenting levels.
                 (highlight-indent-guides-mode +1)))
 
         (add-hook 'evil-visual-state-exit-hook  #'me/enable-hl-indent-maybe)))
-#+END_SRC
+   #+END_SRC
 
-Highlight line under point.
+   Highlight line under point.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package hl-line
     :preface (defun me/hl-line-mode-off () (setq-local global-hl-line-mode nil))
     :hook (after-init . global-hl-line-mode)
@@ -2515,12 +2510,12 @@ Highlight line under point.
         (add-hook 'evil-visual-state-exit-hook  #'me/enable-hl-line-maybe)))
 
 
-#+END_SRC
+   #+END_SRC
 
-Prettify symbols. Below is the configuration of the prettify-symbol feature. You
-should enable the feature as a minor-mode and on a per-mode basis only.
+   Prettify symbols. Below is the configuration of the prettify-symbol feature. You
+   should enable the feature as a minor-mode and on a per-mode basis only.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package prog-mode
   :straight (prog-mode :type built-in)
   :preface
@@ -2530,29 +2525,29 @@ should enable the feature as a minor-mode and on a per-mode basis only.
   :custom
   (prettify-symbols-compose-predicate #'me/prettify-symbols-compose-predicate)
   (prettify-symbols-unprettify-at-point 'right-edge))
-#+END_SRC
+   #+END_SRC
 
-Colorize colors as text with their value.
+   Colorize colors as text with their value.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package rainbow-mode
   :hook prog-mode
   :custom (rainbow-x-colors-major-mode-list '()))
-#+END_SRC
+   #+END_SRC
 
-Turn on =auto-fill-mode= /almost/ everywhere.
+   Turn on =auto-fill-mode= /almost/ everywhere.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package simple
   :straight (simple :type built-in)
   :hook
   ((prog-mode . turn-on-auto-fill)
    (text-mode . turn-on-auto-fill)))
-#+END_SRC
+   #+END_SRC
 
 ** Shell and Terminal
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package em-hist
   :straight (em-hist :type built-in)
   :custom (eshell-hist-ignoredups t))
@@ -2572,48 +2567,48 @@ Turn on =auto-fill-mode= /almost/ everywhere.
    (eshell-mode . (lambda () (setq-local scroll-margin 0))))
   :custom
   (eshell-scroll-to-bottom-on-input t))
-#+END_SRC
+   #+END_SRC
 
-Yes, Emacs emulates terminals too.
+   Yes, Emacs emulates terminals too.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package term
   :straight (term :type built-in)
   :hook
   ((term-mode . me/hl-line-mode-off)
    (term-mode . (lambda () (setq-local scroll-margin 0)))))
-#+END_SRC
+   #+END_SRC
 
-Provide a way to invoke =bash= on Windows. This requires "Developer Mode" to
-be enabled in the first place.
+   Provide a way to invoke =bash= on Windows. This requires "Developer Mode" to
+   be enabled in the first place.
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (when (eq system-type 'windows-nt)
   (defun me/bash ()
     (interactive)
     (let ((explicit-shell-file-name "C:/Windows/System32/bash.exe"))
       (shell))))
-#+END_SRC
+   #+END_SRC
 
 ** Version Control
 
-Magit provides Git facilities directly from within Emacs.
+   Magit provides Git facilities directly from within Emacs.
 
-#+BEGIN_QUOTE
-Magit is an interface to the version control system
-[[https://git-scm.com/][Git]], implemented as an
-[[https://www.gnu.org/software/emacs][Emacs]] package. Magit aspires to be a
-complete Git porcelain. While we cannot (yet) claim that Magit wraps and
-improves upon each and every Git command, it is complete enough to allow even
-experienced Git users to perform almost all of their daily version control tasks
-directly from within Emacs. While many fine Git clients exist, only Magit and
-Git itself deserve to be called porcelains.
-[[https://magit.vc/about.html][(more)]]
+   #+BEGIN_QUOTE
+   Magit is an interface to the version control system
+   [[https://git-scm.com/][Git]], implemented as an
+   [[https://www.gnu.org/software/emacs][Emacs]] package. Magit aspires to be a
+   complete Git porcelain. While we cannot (yet) claim that Magit wraps and
+   improves upon each and every Git command, it is complete enough to allow even
+   experienced Git users to perform almost all of their daily version control tasks
+   directly from within Emacs. While many fine Git clients exist, only Magit and
+   Git itself deserve to be called porcelains.
+   [[https://magit.vc/about.html][(more)]]
 
-[[https://github.com/magit/magit][Jonas Bernoulli]]
-#+END_QUOTE
+   [[https://github.com/magit/magit][Jonas Bernoulli]]
+   #+END_QUOTE
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package git-commit
   :preface
   (defun me/git-commit-auto-fill-everywhere ()
@@ -2623,9 +2618,9 @@ Git itself deserve to be called porcelains.
   (git-commit-mode . me/git-commit-auto-fill-everywhere)
   :custom
   (git-commit-summary-max-length 50))
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package magit
   :bind
   (:map magit-hunk-section-map
@@ -2641,20 +2636,20 @@ Git itself deserve to be called porcelains.
   (magit-section-show-child-count t)
   :config
   (remove-hook 'magit-section-highlight-hook #'magit-section-highlight))
-#+END_SRC
+   #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package gitattributes-mode)
 (use-package gitconfig-mode)
 (use-package gitignore-mode)
-#+END_SRC
+   #+END_SRC
 
 ** Whitespaces
 
-Highlight space-like characters, eg. trailing spaces, tabs, empty lines.
+   Highlight space-like characters, eg. trailing spaces, tabs, empty lines.
 
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package whitespace
   :straight (whitespace :type built-in)
   :hook
@@ -2662,19 +2657,19 @@ Highlight space-like characters, eg. trailing spaces, tabs, empty lines.
    (text-mode . whitespace-turn-on))
   :custom
   (whitespace-style '(face empty indentation::space tab trailing)))
-#+END_SRC
+   #+END_SRC
 
 
-Delete on save
+   Delete on save
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (use-package ws-butler
     :config
     (setq ws-butler-global-exempt-modes
             (append ws-butler-global-exempt-modes
                     '(special-mode comint-mode term-mode eshell-mode)))
     (ws-butler-global-mode))
-#+END_SRC
+   #+END_SRC
 
 
 
@@ -2682,7 +2677,7 @@ Delete on save
 
 ** Symbols
 
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
 (defvar +pretty-code-symbols
   '(;; org
     :name          "»"
@@ -2827,7 +2822,7 @@ Otherwise it builds `prettify-code-symbols-alist' according to
       (prettify-symbols-mode +1))))
 
 (add-hook 'after-change-major-mode-hook #'+pretty-code|init-pretty-symbols)
-#+END_SRC
------
+   #+END_SRC
+   -----
 
-[[#dotemacs][Back to top]]
+   [[#dotemacs][Back to top]]
