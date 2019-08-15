@@ -4,6 +4,7 @@
 * Table of Content                                                      :TOC:
 - [[#bootstrap][Bootstrap]]
   - [[#constants][Constants]]
+  - [[#hooks][Hooks]]
   - [[#use-better-defaults][Use better defaults]]
   - [[#load-customel][Load =.custom.el=]]
   - [[#load-secretel][Load =.secret.el=]]
@@ -66,6 +67,12 @@
 (defconst IS-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
 (defconst IS-BSD     (or IS-MAC (eq system-type 'berkeley-unix)))
    #+END_SRC
+
+
+** Hooks
+
+#+BEGIN_SRC emacs-lisp
+#+END_SRC
 
 ** Use better defaults
 
@@ -1048,12 +1055,14 @@ If any hook returns non-nil, all hooks after it are ignored.")
    #+END_SRC
 
 *** Global
-
     #+BEGIN_SRC emacs-lisp
-    (map! (:map override
-          ;; A little sandbox to run code in
-          "M-;" #'eval-expression
-          "A-;" #'eval-expression)
+(add-hook 'my/after-init-hook 
+  (lambda ()
+        (map!
+        (:map override
+        ;; A little sandbox to run code in
+        "M-;" #'eval-expression
+        "A-;" #'eval-expression)
 
         ;; Smarter newlines
         :i [remap newline] #'newline-and-indent  ; auto-indent on newline
@@ -1197,6 +1206,7 @@ If any hook returns non-nil, all hooks after it are ignored.")
         :v "S" #'evil-surround-region
         :o "s" #'evil-surround-edit
         :o "S" #'evil-Surround-edit)
+        ))
     #+END_SRC
 
 
@@ -2890,6 +2900,18 @@ _q_ quit            _b_ balance         _-_ out
    #+END_SRC
 
 ** Quality of Life
+
+  Better help
+
+   #+BEGIN_SRC emacs-lisp
+   (use-package helpful
+    :init
+    (define-key!
+      [remap describe-function] #'helpful-callable
+      [remap describe-command]  #'helpful-command
+      [remap describe-variable] #'helpful-variable
+      [remap describe-key]      #'helpful-key))
+   #+END_SRC
 
    Auto-indent code as you write.
 

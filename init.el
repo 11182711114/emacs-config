@@ -8,6 +8,8 @@
 
 (let ((gc-cons-threshold most-positive-fixnum))
 
+  (defvar my/after-init-hook nil)
+
   (defvar my/emacs-dir
       (eval-when-compile (file-truename user-emacs-directory))
       "The path to the currently loaded .emacs.d directory. Must end with a slash.")
@@ -102,6 +104,7 @@
 
   ;; Tangle configuration
   (org-babel-load-file (expand-file-name "emacsconfig.org" user-emacs-directory))
+  (run-hooks my/after-init-hook)
   (garbage-collect))
 
 ;;; init.el ends here
