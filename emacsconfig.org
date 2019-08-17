@@ -139,12 +139,11 @@
     initial-major-mode 'fundamental-mode
     initial-scratch-message nil
     ;; History & backup settings (save nothing, that's what git is for)
-    ;; auto-save-default nil
-    ;; create-lockfiles nil
-    ;; history-length 500
-    ;; make-backup-files nil  ; don't create backup~ files
+    auto-save-default nil
+    create-lockfiles nil
+    history-length 500
+    make-backup-files nil  ; don't create backup~ files
     )
-
 
 (cd "~/")                                         ; Move to the user directory
 (delete-selection-mode 1)                         ; Replace region when inserting text
@@ -159,11 +158,11 @@
 (blink-cursor-mode -1)                            ; Disable blinking cursor
 
 (when (fboundp 'set-charset-priority)             ; UTF-8 as the default coding system
-  (set-charset-priority 'unicode))     ; pretty
-(prefer-coding-system 'utf-8)          ; pretty
-(setq locale-coding-system 'utf-8)     ; please
+  (set-charset-priority 'unicode))                ; pretty
+(prefer-coding-system 'utf-8)                     ; pretty
+(setq locale-coding-system 'utf-8)                ; please
 (unless IS-WINDOWS
-  (setq selection-coding-system 'utf-8))  ; with sugar on top
+  (setq selection-coding-system 'utf-8))          ; with sugar on top
    #+END_SRC
 
    Garbage-collect on focus-out, Emacs /should/ feel snappier.
@@ -1217,174 +1216,6 @@ If any hook returns non-nil, all hooks after it are ignored.")
    Load theme
 
    #+BEGIN_SRC emacs-lisp
-(defvar load-theme-hook '())
-(use-package doom-themes
-    :demand t
-    :custom
-    (doom-themes-enable-bold t)
-    (doom-themes-enable-italic t)
-    :config
-    (load-theme 'doom-vibrant t))
-   #+END_SRC
-
-   #+BEGIN_SRC emacs-lisp
-(use-package all-the-icons)
-   #+END_SRC
-
-   Loads solaire mode to dynamically darken/lighten focused windows
-
-   #+BEGIN_SRC emacs-lisp
-(use-package solaire-mode
-  :defer t
-  :preface
-  (defun solaire-mode-swap-bg-maybe ()
-    (when-let (rule (assq doom-theme +doom-solaire-themes))
-      (require 'solaire-mode)
-      (when (cdr rule)
-        (solaire-mode-swap-bg)
-        (with-eval-after-load 'ansi-color
-          (when-let (color (face-background 'default))
-            (setf (aref ansi-color-names-vector 0) color))))))
-  :hook
-  ((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
-  (minibuffer-setup . solaire-mode-in-minibuffer)
-  (doom-load-theme . #'solaire-mode-swap-bg-maybe)
-  (focus-in . #'solaire-mode-reset)
-  :config
-  (solaire-global-mode +1)
-  (solaire-mode-swap-bg))
-   #+END_SRC
-
-** Mode-Line
-
-   Mode line
-
-   #+BEGIN_SRC emacs-lisp
-(use-package doom-modeline
-    :custom
-    (find-file-visit-truename t)
-    (doom-modeline-icon t)
-    (doom-modeline-major-mode-icon t)
-    (projectile-dynamic-mode-line t)
-    (doom-modeline-bar-width 3)
-    (doom-modeline-github nil)
-    (doom-modeline-mu4e nil)
-    (doom-modeline-persp-name nil)
-    (doom-modeline-minor-modes nil)
-    (doom-modeline-buffer-file-name-style 'relative-from-project)
-    :hook
-    (after-init . doom-modeline-mode)
-    (theme-load . doom-modeline-mode)
-    (org-mode . doom-modeline-mode)
-    (theme-load . doom-modeline-refresh-bars)
-    (doom-modeline-mode . size-indication-mode) ; filesize in modeline
-    (doom-modeline-mode . column-number-mode)) ; cursor column in modeline
-   #+END_SRC
-
-   Modeline for magit
-
-   #+BEGIN_SRC emacs-lisp
-(use-package hide-mode-line
-  :config
-  (defun +modeline|hide-in-non-status-buffer ()
-"Show minimal modeline in magit-status buffer, no modeline elsewhere."
-  (if (eq major-mode 'magit-status-mode)
-      (doom-modeline-set-project-modeline)
-      (hide-mode-line-mode))))
-;; (add-hook 'magit-mode-hook #'+modeline|hide-in-non-status-buffer)
-      ;; (magit-mode . #'+modeline|hide-in-non-status-buffer))
-   #+END_SRC
-
-** Bars
-
-*** Sidebar
-
-    For when you need to go explorin'
-
-    #+BEGIN_SRC emacs-lisp
-(use-package treemacs
-    :defer t
-    :custom
-    (treemacs-follow-after-init t)
-    (treemacs-is-never-other-window t)
-    (treemacs-sorting 'alphabetic-case-insensitive-desc)
-    (treemacs-persist-file (concat my/cache-dir "treemacs-persist"))
-    (treemacs-last-error-persist-file (concat my/cache-dir "treemacs-last-error-persist"))
-    (doom-themes-treemacs-theme "doom-colors") ; Colorful theme
-    :config
-    (treemacs-follow-mode -1)
-    (with-eval-after-load 'treemacs-persistence
-        (setq treemacs--last-error-persist-file
-            (concat my/cache-dir
-            "treemacs-persist-at-last-error")))
-    (doom-themes-treemacs-config))
-    #+END_SRC
-
-    #+BEGIN_SRC emacs-lisp
-(use-package treemacs-projectile
-    :requires (treemacs projectile)
-    :after (treemacs projectile)
-    :defer t)
-
-(use-package treemacs-magit
-    :requires (treemacs evil)
-    :after (treemacs magit)
-    :defer t)
-    #+END_SRC
-
-*** Tabs
-
-
-    #+BEGIN_SRC emacs-lisp
-
-(use-package centaur-tabs
-    :config
-    (setq centaur-tab-style "bar"
-            centaur-tabs-height 32
-            centaur-tabs-set-icons t
-            ;; centaur-tabs-gray-out-icons 'buffer
-            centaur-tabs-set-bar 'over
-            centaur-tabs-set-modified-marker t)
-    (centaur-tabs-group-by-projectile-project)
-    (centaur-tabs-headline-match)
-    :hook
-    (prog-mode . centaur-tabs-local-mode)
-    (dashboard-mode . centaur-tabs-local-mode)
-    (term-mode . centaur-tabs-local-mode)
-    (calendar-mode . centaur-tabs-local-mode)
-    (org-agenda-mode . centaur-tabs-local-mode)
-    (helpful-mode . centaur-tabs-local-mode)
-    :config
-    (centaur-tabs-mode t)
-    :bind
-    (:map evil-normal-state-map
-            ("g t" . centaur-tabs-forward)
-            ("g T" . centaur-tabs-backward)))
-
-    #+END_SRC
-
-
-
-** Misc
-
-*** Linenumbers
-
-    #+BEGIN_SRC emacs-lisp
-(add-hook 'prog-mode-hook 'display-line-numbers-mode)
-(add-hook 'org-mode-hook 'display-line-numbers-mode)
-(add-hook 'fundamental-mode-hook 'display-line-numbers-mode)
-    #+END_SRC
-
-
-*** End of buffer
-
-    #+BEGIN_SRC emacs-lisp
-(use-package vi-tilde-fringe
-    :hook
-    (prog-mode . vi-tilde-fringe-mode)
-    (text-mode . vi-tilde-fringe-mode)
-    (conf-mode . vi-tilde-fringe-mode))
-    #+END_SRC
 
 * Languages
 ** CSS
@@ -1543,60 +1374,7 @@ If any hook returns non-nil, all hooks after it are ignored.")
    #+END_QUOTE
 
    #+BEGIN_SRC emacs-lisp
-(use-package org
-  :preface
-  (defun me/org-src-buffer-name (org-buffer-name language)
-    "Construct the buffer name for a source editing buffer. See
-`org-src--construct-edit-buffer-name'."
-    (format "*%s*" org-buffer-name))
-  (defun me/org-set-ongoing-hydra-body ()
-    (setq me/ongoing-hydra-body #'hydra-org/body))
-  :bind
-  (:map org-mode-map
-        ([remap backward-paragraph] . me/backward-paragraph-dwim)
-        ([remap forward-paragraph] . me/forward-paragraph-dwim)
-        ("<C-return>" . nil)
-        ("<C-S-down>" . nil)
-        ("<C-S-up>" . nil)
-        ("<M-S-down>" . nil)
-        ("<M-S-up>" . nil))
-  :hook
-  ((org-mode . me/org-set-ongoing-hydra-body)
-   (org-mode . org-sticky-header-mode)
-   (org-mode . toc-org-enable))
-  :custom
-  (org-descriptive-links nil)
-  (org-edit-src-content-indentation 0)
-  (org-edit-src-persistent-message nil)
-  (org-fontify-done-headline t)
-  (org-fontify-quote-and-verse-blocks t)
-  (org-src-window-setup 'current-window)
-  (org-startup-folded nil)
-  (org-startup-truncated nil)
-  (org-support-shift-select 'always)
-  :config
-  (advice-add 'org-src--construct-edit-buffer-name :override #'me/org-src-buffer-name)
-  (doom-themes-org-config))
-   #+END_SRC
 
-   Display the current Org header in the header-line.
-
-   #+BEGIN_SRC emacs-lisp
-(use-package org-sticky-header
-  :custom
-  (org-sticky-header-full-path 'full)
-  (org-sticky-header-outline-path-separator " / ")
-  :config
-  (setq-default
-   org-sticky-header-header-line-format
-   '(:eval (setq org-sticky-header-stickyline (concat " " (org-sticky-header--fetch-stickyline))))))
-   #+END_SRC
-
-   Tired of having to manually update your tables of contents? This package will
-   maintain a TOC at the first heading that has a =:TOC:= tag.
-
-   #+BEGIN_SRC emacs-lisp
-(use-package toc-org :after org)
    #+END_SRC
 
 ** Python
@@ -1657,104 +1435,7 @@ If any hook returns non-nil, all hooks after it are ignored.")
    #+END_QUOTE
 
    #+BEGIN_SRC emacs-lisp
-(use-package company
-    :bind
-    (:map company-active-map
-            ("RET" . nil)
-            ([return] . nil)
-            ("TAB" . company-complete-selection)
-            ([tab] . company-complete-selection)
-            ("<right>" . company-complete-common))
-    :hook
-    (after-init . global-company-mode)
-    :init
-    (setq company-minimum-prefix-length 2
-            company-tooltip-limit 14
-            company-dabbrev-downcase nil
-            company-dabbrev-ignore-case nil
-            company-dabbrev-code-other-buffers t
-            company-tooltip-align-annotations t
-            company-require-match 'never
-            company-global-modes
-            '(not erc-mode message-mode help-mode gud-mode eshell-mode)
-            company-backends '(company-capf)
-            company-frontends
-            '(company-pseudo-tooltip-frontend
-            company-echo-metadata-frontend))
-    :config
-    (with-eval-after-load 'evil (add-hook 'company-mode-hook #'evil-normalize-keymaps))
-    (defun +company*abort-previous (&rest _) (company-abort))
-    (advice-add #'company-begin-backend :before #'+company*abort-previous)
-    (global-company-mode +1))
-   #+END_SRC
 
-
-   Make company face look nicer
-
-   #+BEGIN_SRC emacs-lisp
-(use-package company-box
-    :hook (company-mode . company-box-mode)
-    :config
-    (setq company-box-show-single-candidate t
-            company-box-backends-colors nil
-            company-box-max-candidates 50
-            company-box-icons-alist 'company-box-icons-all-the-icons
-            company-box-icons-functions
-            '(+company-box-icons--yasnippet company-box-icons--lsp +company-box-icons--elisp company-box-icons--acphp)
-            company-box-icons-all-the-icons
-            `((Unknown       . ,(all-the-icons-material "find_in_page"             :height 0.8 :face 'all-the-icons-purple))
-            (Text          . ,(all-the-icons-material "text_fields"              :height 0.8 :face 'all-the-icons-green))
-            (Method        . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
-            (Function      . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
-            (Constructor   . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
-            (Field         . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
-            (Variable      . ,(all-the-icons-material "adjust"                   :height 0.8 :face 'all-the-icons-blue))
-            (Class         . ,(all-the-icons-material "class"                    :height 0.8 :face 'all-the-icons-red))
-            (Interface     . ,(all-the-icons-material "settings_input_component" :height 0.8 :face 'all-the-icons-red))
-            (Module        . ,(all-the-icons-material "view_module"              :height 0.8 :face 'all-the-icons-red))
-            (Property      . ,(all-the-icons-material "settings"                 :height 0.8 :face 'all-the-icons-red))
-            (Unit          . ,(all-the-icons-material "straighten"               :height 0.8 :face 'all-the-icons-red))
-            (Value         . ,(all-the-icons-material "filter_1"                 :height 0.8 :face 'all-the-icons-red))
-            (Enum          . ,(all-the-icons-material "plus_one"                 :height 0.8 :face 'all-the-icons-red))
-            (Keyword       . ,(all-the-icons-material "filter_center_focus"      :height 0.8 :face 'all-the-icons-red))
-            (Snippet       . ,(all-the-icons-material "short_text"               :height 0.8 :face 'all-the-icons-red))
-            (Color         . ,(all-the-icons-material "color_lens"               :height 0.8 :face 'all-the-icons-red))
-            (File          . ,(all-the-icons-material "insert_drive_file"        :height 0.8 :face 'all-the-icons-red))
-            (Reference     . ,(all-the-icons-material "collections_bookmark"     :height 0.8 :face 'all-the-icons-red))
-            (Folder        . ,(all-the-icons-material "folder"                   :height 0.8 :face 'all-the-icons-red))
-            (EnumMember    . ,(all-the-icons-material "people"                   :height 0.8 :face 'all-the-icons-red))
-            (Constant      . ,(all-the-icons-material "pause_circle_filled"      :height 0.8 :face 'all-the-icons-red))
-            (Struct        . ,(all-the-icons-material "streetview"               :height 0.8 :face 'all-the-icons-red))
-            (Event         . ,(all-the-icons-material "event"                    :height 0.8 :face 'all-the-icons-red))
-            (Operator      . ,(all-the-icons-material "control_point"            :height 0.8 :face 'all-the-icons-red))
-            (TypeParameter . ,(all-the-icons-material "class"                    :height 0.8 :face 'all-the-icons-red))
-            ;; (Template   . ,(company-box-icons-image "Template.png"))))
-            (Yasnippet     . ,(all-the-icons-material "short_text"               :height 0.8 :face 'all-the-icons-green))
-            (ElispFunction . ,(all-the-icons-material "functions"                :height 0.8 :face 'all-the-icons-red))
-            (ElispVariable . ,(all-the-icons-material "check_circle"             :height 0.8 :face 'all-the-icons-blue))
-            (ElispFeature  . ,(all-the-icons-material "stars"                    :height 0.8 :face 'all-the-icons-orange))
-            (ElispFace     . ,(all-the-icons-material "format_paint"             :height 0.8 :face 'all-the-icons-pink))))
-
-    (defun +company-box-icons--yasnippet (candidate)
-        (when (get-text-property 0 'yas-annotation candidate)
-        'Yasnippet))
-
-    (defun +company-box-icons--elisp (candidate)
-        (when (derived-mode-p 'emacs-lisp-mode)
-        (let ((sym (intern candidate)))
-            (cond ((fboundp sym)  'ElispFunction)
-                ((boundp sym)   'ElispVariable)
-                ((featurep sym) 'ElispFeature)
-                ((facep sym)    'ElispFace))))))
-   #+END_SRC
-
-   #+BEGIN_SRC emacs-lisp
-(use-package company-prescient
-    :hook (company-mode . company-prescient-mode)
-    :config
-    ;; NOTE prescient config duplicated with `ivy'
-    (setq prescient-save-file (concat my/cache-dir "prescient-save.el"))
-    (prescient-persist-mode +1))
    #+END_SRC
 
 
@@ -3133,75 +2814,7 @@ _q_ quit            _b_ balance         _-_ out
    #+END_QUOTE
 
    #+BEGIN_SRC emacs-lisp
-(use-package git-commit
-  :preface
-  (defun me/git-commit-auto-fill-everywhere ()
-    (setq fill-column 72)
-    (setq-local comment-auto-fill-only-comments nil))
-  :hook
-  (git-commit-mode . me/git-commit-auto-fill-everywhere)
-  :custom
-  (git-commit-summary-max-length 50))
-   #+END_SRC
 
-   #+BEGIN_SRC emacs-lisp
-(use-package magit
-  :bind
-  (:map magit-hunk-section-map
-        ("RET" . magit-diff-visit-file-other-window)
-        ([return] . magit-diff-visit-file-other-window))
-  :custom
-  (magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1)
-  (magit-diff-highlight-hunk-body nil)
-  (magit-diff-highlight-hunk-region-functions
-   '(magit-diff-highlight-hunk-region-dim-outside magit-diff-highlight-hunk-region-using-face))
-  (magit-popup-display-buffer-action '((display-buffer-same-window)))
-  (magit-refs-show-commit-count 'all)
-  (magit-section-show-child-count t)
-  :config
-  (remove-hook 'magit-section-highlight-hook #'magit-section-highlight))
-   #+END_SRC
-
-*** Evil
-
-    #+BEGIN_SRC emacs-lisp
-(use-package evil-magit
-    :after magit
-    :init
-    (setq evil-magit-state 'normal
-        evil-magit-use-z-for-folds t)
-    :config
-    (unmap! magit-mode-map "M-1" "M-2" "M-3" "M-4") ; replaced by z1, z2, z3, etc
-    (evil-define-key* 'normal magit-status-mode-map [escape] nil) ; q is enough
-    (evil-define-key* '(normal visual) magit-mode-map
-        "zz" #'evil-scroll-line-to-center
-        "%"  #'magit-gitflow-popup)
-    (define-key! 'normal
-        (magit-status-mode-map
-        magit-stash-mode-map
-        magit-revision-mode-map
-        magit-diff-mode-map)
-        [tab] #'magit-section-toggle)
-    (with-eval-after-load 'git-rebase
-        (dolist (key '(("M-k" . "gk") ("M-j" . "gj")))
-        (when-let (desc (assoc (car key) evil-magit-rebase-commands-w-descriptions))
-            (setcar desc (cdr key))))
-        (evil-define-key* evil-magit-state git-rebase-mode-map
-        "gj" #'git-rebase-move-line-down
-        "gk" #'git-rebase-move-line-up)))
-    #+END_SRC
-
-*** Git flow                                                            :tes:
-
-    #+BEGIN_SRC emacs-lisp
-(use-package magit-gitflow
-    :hook (magit-mode . turn-on-magit-gitflow))
-    #+END_SRC
-
-    #+BEGIN_SRC emacs-lisp
-(use-package gitattributes-mode)
-(use-package gitconfig-mode)
-(use-package gitignore-mode)
     #+END_SRC
 
 ** Whitespaces
@@ -3210,25 +2823,13 @@ _q_ quit            _b_ balance         _-_ out
 
 
    #+BEGIN_SRC emacs-lisp
-(use-package whitespace
-  :straight (whitespace :type built-in)
-  :hook
-  ((prog-mode . whitespace-turn-on)
-   (text-mode . whitespace-turn-on))
-  :custom
-  (whitespace-style '(face empty indentation::space tab trailing)))
+    (ws-butler-global-mode))
    #+END_SRC
 
 
    Delete on save
 
    #+BEGIN_SRC emacs-lisp
-(use-package ws-butler
-    :config
-    (setq ws-butler-global-exempt-modes
-            (append ws-butler-global-exempt-modes
-                    '(special-mode comint-mode term-mode eshell-mode)))
-    (ws-butler-global-mode))
    #+END_SRC
 
 

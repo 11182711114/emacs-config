@@ -1,110 +1,50 @@
-;;; init.el --- My Emacs configuration, shamelessly stolen from various sources
-;;; Commentary:
-;; My Emacs configuration, shamelessly stolen from various sources
-
-;; Following lines load an Org file and build the configuration code out of it.
+;;; init.el -- My Emacs configuration, shamelessly stolen from various sources -*- lexical-binding: t; -*-
 
 ;;; Code:
+(defvar my/gc-cons-threshold 16777216 ; 16mb
+  "The default value to use for `gc-cons-threshold'. If you experience freezing,
+decrease this. If you experience stuttering, increase this.")
 
-(let ((gc-cons-threshold most-positive-fixnum))
+(defvar my/gc-cons-upper-limit 536870912 ; 512mb
+  "The temporary value for `gc-cons-threshold' to defer it.")
 
-  (defvar my/after-init-hook nil)
+(defvar my/file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
 
-  (defvar my/emacs-dir
-      (eval-when-compile (file-truename user-emacs-directory))
-      "The path to the currently loaded .emacs.d directory. Must end with a slash.")
+(defun my/restore-startup-optimizations ()
+  "Resets garbage collection settings to reasonable defaults (a large
+`gc-cons-threshold' can cause random freezes otherwise)."
 
-  (defvar my/local-dir (concat my/emacs-dir ".local/")
-    "Root directory for local storage.
+  ;; Do this on idle timer to defer a possible GC pause that could result; also
+  ;; allows deferred packages to take advantage of these optimizations.
+  (run-with-idle-timer
+    3 nil
+    (lambda ()
+      (setq file-name-handler-alist my/file-name-handler-alist)
+      (setq-default gc-cons-threshold my/gc-cons-threshold)
+      ;; To speed up minibuffer commands (like helm and ivy), we defer garbage
+      ;; collection while the minibuffer is active.
+      (defun my/defer-garbage-collection ()
+        (setq gc-cons-threshold my/gc-cons-upper-limit))
+      (defun my/restore-garbage-collection ()
+        ;; Defer it so that commands launched from the minibuffer can enjoy the
+        ;; benefits.
+        (run-at-time 1 nil (lambda () (setq gc-cons-threshold my/gc-cons-threshold))))
+      (add-hook 'minibuffer-setup-hook #'my/defer-garbage-collection)
+      (add-hook 'minibuffer-exit-hook  #'my/restore-garbage-collection)
+      ;; GC all sneaky breeky like
+      (add-hook 'focus-out-hook #'garbage-collect))))
 
-  Use this as a storage location for this system's installation of Doom Emacs.
-  These files should not be shared across systems. By default, it is used by
-  `doom-etc-dir' and `doom-cache-dir'. Must end with a slash.")
 
-  (defvar my/etc-dir (concat my/local-dir "etc/")
-    "Directory for non-volatile local storage.
+;; A big contributor to startup times is garbage collection. We up the gc
+;; threshold to temporarily prevent it from running, then reset it later in
+;; `doom|restore-startup-optimizations'.
+(setq gc-cons-threshold my/gc-cons-upper-limit)
+;; This is consulted on every `require', `load' and various path/io functions.
+;; You get a minor speed up by nooping this.
+(setq file-name-handler-alist nil)
+;; Not restoring these to their defaults will cause stuttering/freezes.
+(add-hook 'after-init-hook #'my/restore-startup-optimizations)
 
-  Use this for files that don't change much, like server binaries, external
-  dependencies or long-term shared data. Must end with a slash.")
-
-  (defvar my/cache-dir (concat my/local-dir "cache/")
-    "Directory for volatile local storage.
-
-  Use this for files that change often, like cache files. Must end with a slash.")
-
-  (defvar my/packages-dir (concat my/local-dir "packages/")
-    "Where package.el and quelpa plugins (and their caches) are stored.
-
-  Must end with a slash.")
-
-  (setq-default
-    ;; Dont litter .emacs.d/  
-    package-user-dir             my/packages-dir
-    abbrev-file-name             (concat my/local-dir "abbrev.el")
-    async-byte-compile-log-file  (concat my/etc-dir "async-bytecomp.log")
-    auto-save-list-file-name     (concat my/cache-dir "autosave")
-    backup-directory-alist       (list (cons "." (concat my/cache-dir "backup/")))
-    desktop-dirname              (concat my/etc-dir "desktop/")
-    desktop-base-file-name       "autosave"
-    desktop-base-lock-name       "autosave-lock"
-    desktop-path                 (list desktop-dirname)
-    desktop-save                 t
-    desktop-auto-save-timeout    30
-    pcache-directory             (concat my/cache-dir "pcache/")
-    request-storage-directory    (concat my/cache-dir "request")
-    server-auth-dir              (concat my/cache-dir "server/")
-    shared-game-score-directory  (concat my/etc-dir "shared-game-score/")
-    tramp-auto-save-directory    (concat my/cache-dir "tramp-auto-save/")
-    tramp-backup-directory-alist backup-directory-alist
-    tramp-persistency-file-name  (concat my/cache-dir "tramp-persistency.el")
-    url-cache-directory          (concat my/cache-dir "url/")
-    url-configuration-directory  (concat my/etc-dir "url/")
-    gamegrid-user-score-file-directory (concat my/etc-dir "games/"))
-
-  ;; Set repositories
-  ;; (require 'package)
-  ;; (setq-default
-  ;;  load-prefer-newer t
-  ;;  package-enable-at-startup nil)
-  ;; (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
-  ;; (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
-  ;; (package-initialize)
-
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-(setq straight-check-for-modifications '(watch-files find-when-checking))
-(setq-default 
-  use-package-always-defer t
-  use-package-always-ensure nil
-  straight-use-package-by-default t)
-
-(straight-use-package 'use-package)
-  ;; Install dependencies
-  ;; (unless (package-installed-p 'use-package)
-  ;;   (package-refresh-contents)
-  ;;   (package-install 'use-package t))
-  ;; (setq-default
-  ;;  use-package-always-defer t
-  ;;  use-package-always-ensure t)
-
-  ;; Use latest Org
-  (use-package org
-    :straight org-plus-contrib)
-
-  ;; Tangle configuration
-  (org-babel-load-file (expand-file-name "emacsconfig.org" user-emacs-directory))
-  (run-hooks my/after-init-hook)
-  (garbage-collect))
-
+(require 'badliveware-bootstrap (concat user-emacs-directory "config/core/badliveware-bootstrap"))
 ;;; init.el ends here

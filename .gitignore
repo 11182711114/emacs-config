@@ -17,3 +17,4 @@ autosave
 emacsconfig.el
 .custom.el
 straight/
+./straight/*
