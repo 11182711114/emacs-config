@@ -2,6 +2,8 @@
 
 (require 'use-package)
 
+(require 'badliveware-evil-lib)
+
 (defvar +evil-want-o/O-to-continue-comments t
   "If non-nil, the o/O keys will continue comment lines if the point is on a
 line with a linewise comment.")
@@ -339,7 +341,7 @@ more information on modifiers."
 
 
 (use-package evil-easymotion
-  :commands (evilem-create evilem-default-keybindings)
+  ;; :commands (evilem-create evilem-default-keybindings)
   :config
   ;; Use evil-search backend, instead of isearch
   (evilem-make-motion evilem-motion-search-next #'evil-ex-search-next

@@ -4,6 +4,25 @@
 (require 'general)
 (require 'evil)
 
+(setq use-magit-commit-prompt-p nil)
+(defun use-magit-commit-prompt (&rest args)
+  (setq use-magit-commit-prompt-p t))
+
+(defun magit-commit-prompt ()
+  "Magit prompt and insert commit header with faces."
+  (interactive)
+  (when use-magit-commit-prompt-p
+    (setq use-magit-commit-prompt-p nil)
+    (insert (ivy-read "Commit Type " pretty-magit-prompt
+                      :require-match t :sort t :preselect "Add: "))
+    (add-magit-faces)
+    (evil-insert 1)  ; If you use evil
+    ))
+
+(remove-hook 'git-commit-setup-hook 'with-editor-usage-message)
+(add-hook 'git-commit-setup-hook 'magit-commit-prompt)
+(advice-add 'magit-commit :after 'use-magit-commit-prompt)
+
 (use-package git-commit
     :preface
     (defun me/git-commit-auto-fill-everywhere ()

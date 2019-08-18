@@ -35,7 +35,7 @@ This needs to be changed from $DOOMDIR/init.el.")
     minibuffer-local-isearch-map
     read-expression-map
     ,@'(ivy-minibuffer-map
-          ivy-switch-buffer-map))
+        ivy-switch-buffer-map))
   "A list of all the keymaps used for the minibuffer.")
 
 ;;
@@ -260,43 +260,43 @@ For example, :nvi will map to (list 'normal 'visual 'insert). See
               ((keywordp key)
                (pcase key
                  (:leader
-                  (doom--map-commit)
-                  (setq doom--map-fn 'doom--define-leader-key))
+                   (doom--map-commit)
+                   (setq doom--map-fn 'doom--define-leader-key))
                  (:localleader
-                  (doom--map-commit)
-                  (setq doom--map-fn 'define-localleader-key!))
+                   (doom--map-commit)
+                   (setq doom--map-fn 'define-localleader-key!))
                  (:after
-                  (doom--map-nested (list 'after! (pop rest)) rest)
-                  (setq rest nil))
+                   (doom--map-nested (list 'after! (pop rest)) rest)
+                   (setq rest nil))
                  (:desc
-                  (setq desc (pop rest)))
+                   (setq desc (pop rest)))
                  ((or :map :map* :keymap)
                   (doom--map-set :keymaps `(quote ,(doom-enlist (pop rest)))))
                  (:mode
-                  (push (cl-loop for m in (doom-enlist (pop rest))
-                                 collect (intern (concat (symbol-name m) "-map")))
-                        rest)
-                  (push :map rest))
+                   (push (cl-loop for m in (doom-enlist (pop rest))
+                                  collect (intern (concat (symbol-name m) "-map")))
+                         rest)
+                   (push :map rest))
                  ((or :when :unless)
                   (doom--map-nested (list (intern (doom-keyword-name key)) (pop rest)) rest)
                   (setq rest nil))
                  (:prefix-map
-                  (cl-destructuring-bind (prefix . desc)
-                      (doom-enlist (pop rest))
-                    (let ((keymap (intern (format "doom-leader-%s-map" desc))))
-                      (setq rest
-                            (append (list :desc desc prefix keymap
-                                          :prefix prefix)
-                                    rest))
-                      (push `(defvar ,keymap (make-sparse-keymap))
-                            doom--map-forms))))
+                   (cl-destructuring-bind (prefix . desc)
+                       (doom-enlist (pop rest))
+                     (let ((keymap (intern (format "doom-leader-%s-map" desc))))
+                       (setq rest
+                             (append (list :desc desc prefix keymap
+                                           :prefix prefix)
+                                     rest))
+                       (push `(defvar ,keymap (make-sparse-keymap))
+                             doom--map-forms))))
                  (:prefix
-                  (cl-destructuring-bind (prefix . desc)
-                      (doom-enlist (pop rest))
-                    (doom--map-set (if doom--map-fn :infix :prefix)
-                                   prefix)
-                    (when (stringp desc)
-                      (setq rest (append (list :desc desc "" nil) rest)))))
+                   (cl-destructuring-bind (prefix . desc)
+                       (doom-enlist (pop rest))
+                     (doom--map-set (if doom--map-fn :infix :prefix)
+                                    prefix)
+                     (when (stringp desc)
+                       (setq rest (append (list :desc desc "" nil) rest)))))
                  (:textobj
                   (let* ((key (pop rest))
                          (inner (pop rest))

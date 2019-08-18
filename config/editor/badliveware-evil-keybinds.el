@@ -1,4 +1,4 @@
-;;; badliveware-evik-keybinds.el -*- lexical-binding: t; -*-
+;;; badliveware-evil-keybinds.el -*- lexical-binding: t; -*-
 (require 'badliveware-keybinds)
 (require 'badliveware-evil)
 
@@ -22,12 +22,12 @@
                       (yas-maybe-expand-abbrev-key-filter 'yas-expand))
                  'yas-expand)
       :n [tab] 
-                (general-predicate-dispatch nil
-                ;;  (and (featurep! :editor fold)
-                ;;       (save-excursion (end-of-line) (invisible-p (point))))
-                ;;  '+fold/toggle
-                 (fboundp 'evil-jump-item)
-                 'evil-jump-item)
+      (general-predicate-dispatch nil
+        ;;  (and (featurep! :editor fold)
+        ;;       (save-excursion (end-of-line) (invisible-p (point))))
+        ;;  '+fold/toggle
+        (fboundp 'evil-jump-item)
+        'evil-jump-item)
       :v [tab] (general-predicate-dispatch nil
                  (and (bound-and-true-p yas-minor-mode)
                       (or (eq evil-visual-selection 'line)
@@ -77,8 +77,8 @@
       :m  "[y"    #'+evil:c-string-decode
       ;; NOTE hl-todo-{next,previous} have ]t/[t, use ]F/[F instead
       ;; NOTE {next,previous}-error have ]e/[e, use ddp/ddP or gx instead
-        :m "]x" #'+web:encode-html-entities
-        :m "[x" #'+web:decode-html-entities
+      :m "]x" #'+web:encode-html-entities
+      :m "[x" #'+web:decode-html-entities
 
       ;; custom vim-unmpaired-esque keys
       :m  "]a"    #'evil-forward-arg
@@ -112,35 +112,36 @@
       :v  ">"     #'+evil/visual-indent  ; vnoremap > >gv
 
       ;; window management (prefix "C-w")
-    ;;   (:map evil-window-map
-    ;;     ;; Navigation
-    ;;     "C-h"     #'evil-window-left
-    ;;     "C-j"     #'evil-window-down
-    ;;     "C-k"     #'evil-window-up
-    ;;     "C-l"     #'evil-window-right
-    ;;     "C-w"     #'other-window
-    ;;     ;; Swapping windows
-    ;;     "H"       #'+evil/window-move-left
-    ;;     "J"       #'+evil/window-move-down
-    ;;     "K"       #'+evil/window-move-up
-    ;;     "L"       #'+evil/window-move-right
-    ;;     "C-S-w"   #'ace-swap-window
-    ;;     ;; Window undo/redo
-    ;;     (:prefix "m"
-    ;;       "m"       #'doom/window-maximize-buffer
-    ;;       "v"       #'doom/window-maximize-vertically
-    ;;       "s"       #'doom/window-maximize-horizontally)
-    ;;     "u"       #'winner-undo
-    ;;     "C-u"     #'winner-undo
-    ;;     "C-r"     #'winner-redo
-    ;;     "o"       #'doom/window-enlargen
-    ;;     ;; Delete window
-    ;;     "c"       #'+workspace/close-window-or-workspace
-    ;;     "C-C"     #'ace-delete-window)
+      ;;   (:map evil-window-map
+      ;;     ;; Navigation
+      ;;     "C-h"     #'evil-window-left
+      ;;     "C-j"     #'evil-window-down
+      ;;     "C-k"     #'evil-window-up
+      ;;     "C-l"     #'evil-window-right
+      ;;     "C-w"     #'other-window
+      ;;     ;; Swapping windows
+      ;;     "H"       #'+evil/window-move-left
+      ;;     "J"       #'+evil/window-move-down
+      ;;     "K"       #'+evil/window-move-up
+      ;;     "L"       #'+evil/window-move-right
+      ;;     "C-S-w"   #'ace-swap-window
+      ;;     ;; Window undo/redo
+      ;;     (:prefix "m"
+      ;;       "m"       #'doom/window-maximize-buffer
+      ;;       "v"       #'doom/window-maximize-vertically
+      ;;       "s"       #'doom/window-maximize-horizontally)
+      ;;     "u"       #'winner-undo
+      ;;     "C-u"     #'winner-undo
+      ;;     "C-r"     #'winner-redo
+      ;;     "o"       #'doom/window-enlargen
+      ;;     ;; Delete window
+      ;;     "c"       #'+workspace/close-window-or-workspace
+      ;;     "C-C"     #'ace-delete-window)
 
       ;; Plugins
       ;; evil-easymotion
-      :m  "gs"    #'+evil/easymotion  ; lazy-load `evil-easymotion'
+      ;; :m  "gs"    #'+evil/easymotion  ; lazy-load `evil-easymotion'
+      :m  "gs"    #'evil-forward-word-begin  ; lazy-load `evil-easymotion'
       (:after evil-easymotion
         :map evilem-map
         "a" (evilem-create #'evil-forward-arg)
@@ -158,11 +159,11 @@
                                   (evil-snipe-enable-highlight)
                                   (evil-snipe-enable-incremental-highlight)))
         "SPC" (lambda () (interactive)
-        (let ((current-prefix-arg t))
-            (call-interactively #'avy-goto-char-timer)))
+                (let ((current-prefix-arg t))
+                  (call-interactively #'avy-goto-char-timer)))
         "/" #'avy-goto-char-timer)
 
-    
+      
 
       ;; text object plugins
       :textobj "x" #'evil-inner-xml-attr               #'evil-outer-xml-attr
@@ -176,11 +177,11 @@
       (:after evil-snipe
         :map evil-snipe-parent-transient-map
         "C-;" (lambda () (interactive) (require 'evil-easymotion)
-                  (call-interactively
-                   (evilem-create #'evil-snipe-repeat
-                                  :bind ((evil-snipe-scope 'whole-buffer)
-                                         (evil-snipe-enable-highlight)
-                                         (evil-snipe-enable-incremental-highlight))))))
+                (call-interactively
+                 (evilem-create #'evil-snipe-repeat
+                                :bind ((evil-snipe-scope 'whole-buffer)
+                                       (evil-snipe-enable-highlight)
+                                       (evil-snipe-enable-incremental-highlight))))))
 
       ;; evil-surround
       :v "S" #'evil-surround-region
@@ -193,139 +194,139 @@
 
 ;;; :completion
 (map!
-    :i "C-@"      #'+company/complete
-    :i "C-SPC"    #'+company/complete
-    (:prefix "C-x"
-        :i "C-l"    #'+company/whole-lines
-        :i "C-k"    #'+company/dict-or-keywords
-        :i "C-f"    #'company-files
-        :i "C-]"    #'company-etags
-        :i "s"      #'company-ispell
-        :i "C-s"    #'company-yasnippet
-        :i "C-o"    #'company-capf
-        :i "C-n"    #'+company/dabbrev
-        :i "C-p"    #'+company/dabbrev-code-previous)
-    (:after company
-        (:map company-active-map
-        "C-w"     nil  ; don't interfere with `evil-delete-backward-word'
-        "C-n"     #'company-select-next
-        "C-p"     #'company-select-previous
-        "C-j"     #'company-select-next
-        "C-k"     #'company-select-previous
-        "C-h"     #'company-show-doc-buffer
-        "C-u"     #'company-previous-page
-        "C-d"     #'company-next-page
-        "C-s"     #'company-filter-candidates
-        "C-S-s"   #'counsel-company
-        "C-SPC"   #'company-complete-common
-        "TAB"     #'company-complete-common-or-cycle
-        [tab]     #'company-complete-common-or-cycle
-        [backtab] #'company-select-previous)
-        (:map company-search-map  ; applies to `company-filter-map' too
-        "C-n"     #'company-select-next-or-abort
-        "C-p"     #'company-select-previous-or-abort
-        "C-j"     #'company-select-next-or-abort
-        "C-k"     #'company-select-previous-or-abort
-        "C-s"     (lambda () (interactive) (company-search-abort) (company-filter-candidates))
-        "ESC"     #'company-search-abort)
-        ;; TAB auto-completion in term buffers
-        (:map comint-mode-map
-        "TAB" #'company-complete
-        [tab] #'company-complete))
+ :i "C-@"      #'+company/complete
+ :i "C-SPC"    #'+company/complete
+ (:prefix "C-x"
+   :i "C-l"    #'+company/whole-lines
+   :i "C-k"    #'+company/dict-or-keywords
+   :i "C-f"    #'company-files
+   :i "C-]"    #'company-etags
+   :i "s"      #'company-ispell
+   :i "C-s"    #'company-yasnippet
+   :i "C-o"    #'company-capf
+   :i "C-n"    #'+company/dabbrev
+   :i "C-p"    #'+company/dabbrev-code-previous)
+ (:after company
+   (:map company-active-map
+     "C-w"     nil  ; don't interfere with `evil-delete-backward-word'
+     "C-n"     #'company-select-next
+     "C-p"     #'company-select-previous
+     "C-j"     #'company-select-next
+     "C-k"     #'company-select-previous
+     "C-h"     #'company-show-doc-buffer
+     "C-u"     #'company-previous-page
+     "C-d"     #'company-next-page
+     "C-s"     #'company-filter-candidates
+     "C-S-s"   #'counsel-company
+     "C-SPC"   #'company-complete-common
+     "TAB"     #'company-complete-common-or-cycle
+     [tab]     #'company-complete-common-or-cycle
+     [backtab] #'company-select-previous)
+   (:map company-search-map  ; applies to `company-filter-map' too
+     "C-n"     #'company-select-next-or-abort
+     "C-p"     #'company-select-previous-or-abort
+     "C-j"     #'company-select-next-or-abort
+     "C-k"     #'company-select-previous-or-abort
+     "C-s"     (lambda () (interactive) (company-search-abort) (company-filter-candidates))
+     "ESC"     #'company-search-abort)
+   ;; TAB auto-completion in term buffers
+   (:map comint-mode-map
+     "TAB" #'company-complete
+     [tab] #'company-complete))
 
-        (:map (help-mode-map helpful-mode-map)
-          :n "Q" #'ivy-resume)
-        (:after ivy
-          :map ivy-minibuffer-map
-          "C-SPC" #'ivy-call-and-recenter  ; preview file
-          "C-l"   #'ivy-alt-done
-          "C-v"   #'yank)
-        (:after counsel
-          :map counsel-ag-map
-          "C-SPC"    #'ivy-call-and-recenter ; preview
-          "C-l"      #'ivy-done
-          [C-return] (+ivy-do-action! #'+ivy-git-grep-other-window-action)))
+ (:map (help-mode-map helpful-mode-map)
+   :n "Q" #'ivy-resume)
+ (:after ivy
+   :map ivy-minibuffer-map
+   "C-SPC" #'ivy-call-and-recenter  ; preview file
+   "C-l"   #'ivy-alt-done
+   "C-v"   #'yank)
+ (:after counsel
+   :map counsel-ag-map
+   "C-SPC"    #'ivy-call-and-recenter ; preview
+   "C-l"      #'ivy-done
+   [C-return] (+ivy-do-action! #'+ivy-git-grep-other-window-action)))
 
 ;;; :ui
 ;; (map! 
-    ;;   (:when (featurep! :ui workspaces)
-    ;;     :n "gt"    #'+workspace/switch-right
-    ;;     :n "gT"    #'+workspace/switch-left
-    ;;     :n "]w"    #'+workspace/switch-right
-    ;;     :n "[w"    #'+workspace/switch-left
-    ;;     :g "M-1"   #'+workspace/switch-to-0
-    ;;     :g "M-2"   #'+workspace/switch-to-1
-    ;;     :g "M-3"   #'+workspace/switch-to-2
-    ;;     :g "M-4"   #'+workspace/switch-to-3
-    ;;     :g "M-5"   #'+workspace/switch-to-4
-    ;;     :g "M-6"   #'+workspace/switch-to-5
-    ;;     :g "M-7"   #'+workspace/switch-to-6
-    ;;     :g "M-8"   #'+workspace/switch-to-7
-    ;;     :g "M-9"   #'+workspace/switch-to-8
-    ;;     :g "M-0"   #'+workspace/switch-to-final
-    ;;     :g "M-t"   #'+workspace/new
-    ;;     :g "M-T"   #'+workspace/display))
+;;   (:when (featurep! :ui workspaces)
+;;     :n "gt"    #'+workspace/switch-right
+;;     :n "gT"    #'+workspace/switch-left
+;;     :n "]w"    #'+workspace/switch-right
+;;     :n "[w"    #'+workspace/switch-left
+;;     :g "M-1"   #'+workspace/switch-to-0
+;;     :g "M-2"   #'+workspace/switch-to-1
+;;     :g "M-3"   #'+workspace/switch-to-2
+;;     :g "M-4"   #'+workspace/switch-to-3
+;;     :g "M-5"   #'+workspace/switch-to-4
+;;     :g "M-6"   #'+workspace/switch-to-5
+;;     :g "M-7"   #'+workspace/switch-to-6
+;;     :g "M-8"   #'+workspace/switch-to-7
+;;     :g "M-9"   #'+workspace/switch-to-8
+;;     :g "M-0"   #'+workspace/switch-to-final
+;;     :g "M-t"   #'+workspace/new
+;;     :g "M-T"   #'+workspace/display))
 
 ;;; :editor
 (map! 
-    ;;   (:when (featurep! :editor fold)
-    ;;     :nv "C-SPC" #'+fold/toggle)
+ ;;   (:when (featurep! :editor fold)
+ ;;     :nv "C-SPC" #'+fold/toggle)
 
-    ;;   (:when (featurep! :editor format)
-    ;;     :n "gQ"    #'+format:region)
+ ;;   (:when (featurep! :editor format)
+ ;;     :n "gQ"    #'+format:region)
 
-    ;;   (:when (featurep! :editor multiple-cursors)
-    ;;     ;; evil-mc
-    ;;     (:prefix "gz"
-    ;;       :nv "d" #'evil-mc-make-and-goto-next-match
-    ;;       :nv "D" #'evil-mc-make-and-goto-prev-match
-    ;;       :nv "j" #'evil-mc-make-cursor-move-next-line
-    ;;       :nv "k" #'evil-mc-make-cursor-move-prev-line
-    ;;       :nv "m" #'evil-mc-make-all-cursors
-    ;;       :nv "n" #'evil-mc-make-and-goto-next-cursor
-    ;;       :nv "N" #'evil-mc-make-and-goto-last-cursor
-    ;;       :nv "p" #'evil-mc-make-and-goto-prev-cursor
-    ;;       :nv "P" #'evil-mc-make-and-goto-first-cursor
-    ;;       :nv "q" #'evil-mc-undo-all-cursors
-    ;;       :nv "t" #'+multiple-cursors/evil-mc-toggle-cursors
-    ;;       :nv "u" #'evil-mc-undo-last-added-cursor
-    ;;       :nv "z" #'+multiple-cursors/evil-mc-make-cursor-here)
-    ;;     (:after evil-mc
-    ;;       :map evil-mc-key-map
-    ;;       :nv "C-n" #'evil-mc-make-and-goto-next-cursor
-    ;;       :nv "C-N" #'evil-mc-make-and-goto-last-cursor
-    ;;       :nv "C-p" #'evil-mc-make-and-goto-prev-cursor
-    ;;       :nv "C-P" #'evil-mc-make-and-goto-first-cursor)
-    ;;     ;; evil-multiedit
-    ;;     :v  "R"     #'evil-multiedit-match-all
-    ;;     :n  "M-d"   #'evil-multiedit-match-symbol-and-next
-    ;;     :n  "M-D"   #'evil-multiedit-match-symbol-and-prev
-    ;;     :v  "M-d"   #'evil-multiedit-match-and-next
-    ;;     :v  "M-D"   #'evil-multiedit-match-and-prev
-    ;;     :nv "C-M-d" #'evil-multiedit-restore
-    ;;     (:after evil-multiedit
-    ;;       (:map evil-multiedit-state-map
-    ;;         "M-d"    #'evil-multiedit-match-and-next
-    ;;         "M-D"    #'evil-multiedit-match-and-prev
-    ;;         "RET"    #'evil-multiedit-toggle-or-restrict-region
-    ;;         [return] #'evil-multiedit-toggle-or-restrict-region)
-    ;;       (:map (evil-multiedit-state-map evil-multiedit-insert-state-map)
-    ;;         "C-n" #'evil-multiedit-next
-    ;;         "C-p" #'evil-multiedit-prev)))
+ ;;   (:when (featurep! :editor multiple-cursors)
+ ;;     ;; evil-mc
+ ;;     (:prefix "gz"
+ ;;       :nv "d" #'evil-mc-make-and-goto-next-match
+ ;;       :nv "D" #'evil-mc-make-and-goto-prev-match
+ ;;       :nv "j" #'evil-mc-make-cursor-move-next-line
+ ;;       :nv "k" #'evil-mc-make-cursor-move-prev-line
+ ;;       :nv "m" #'evil-mc-make-all-cursors
+ ;;       :nv "n" #'evil-mc-make-and-goto-next-cursor
+ ;;       :nv "N" #'evil-mc-make-and-goto-last-cursor
+ ;;       :nv "p" #'evil-mc-make-and-goto-prev-cursor
+ ;;       :nv "P" #'evil-mc-make-and-goto-first-cursor
+ ;;       :nv "q" #'evil-mc-undo-all-cursors
+ ;;       :nv "t" #'+multiple-cursors/evil-mc-toggle-cursors
+ ;;       :nv "u" #'evil-mc-undo-last-added-cursor
+ ;;       :nv "z" #'+multiple-cursors/evil-mc-make-cursor-here)
+ ;;     (:after evil-mc
+ ;;       :map evil-mc-key-map
+ ;;       :nv "C-n" #'evil-mc-make-and-goto-next-cursor
+ ;;       :nv "C-N" #'evil-mc-make-and-goto-last-cursor
+ ;;       :nv "C-p" #'evil-mc-make-and-goto-prev-cursor
+ ;;       :nv "C-P" #'evil-mc-make-and-goto-first-cursor)
+ ;;     ;; evil-multiedit
+ ;;     :v  "R"     #'evil-multiedit-match-all
+ ;;     :n  "M-d"   #'evil-multiedit-match-symbol-and-next
+ ;;     :n  "M-D"   #'evil-multiedit-match-symbol-and-prev
+ ;;     :v  "M-d"   #'evil-multiedit-match-and-next
+ ;;     :v  "M-D"   #'evil-multiedit-match-and-prev
+ ;;     :nv "C-M-d" #'evil-multiedit-restore
+ ;;     (:after evil-multiedit
+ ;;       (:map evil-multiedit-state-map
+ ;;         "M-d"    #'evil-multiedit-match-and-next
+ ;;         "M-D"    #'evil-multiedit-match-and-prev
+ ;;         "RET"    #'evil-multiedit-toggle-or-restrict-region
+ ;;         [return] #'evil-multiedit-toggle-or-restrict-region)
+ ;;       (:map (evil-multiedit-state-map evil-multiedit-insert-state-map)
+ ;;         "C-n" #'evil-multiedit-next
+ ;;         "C-p" #'evil-multiedit-prev)))
 
-        ;; auto-yasnippet
-        :i  [C-tab] #'aya-expand
-        :nv [C-tab] #'aya-create
-        ;; yasnippet
-        (:after yasnippet
-          (:map yas-keymap
-            "C-e"         #'+snippets/goto-end-of-field
-            "C-a"         #'+snippets/goto-start-of-field
-            [M-right]     #'+snippets/goto-end-of-field
-            [M-left]      #'+snippets/goto-start-of-field
-            [M-backspace] #'+snippets/delete-to-start-of-field
-            [backspace]   #'+snippets/delete-backward-char
-            [delete]      #'+snippets/delete-forward-char-or-field)))
+ ;; auto-yasnippet
+ :i  [C-tab] #'aya-expand
+ :nv [C-tab] #'aya-create
+ ;; yasnippet
+ (:after yasnippet
+   (:map yas-keymap
+     "C-e"         #'+snippets/goto-end-of-field
+     "C-a"         #'+snippets/goto-start-of-field
+     [M-right]     #'+snippets/goto-end-of-field
+     [M-left]      #'+snippets/goto-start-of-field
+     [M-backspace] #'+snippets/delete-to-start-of-field
+     [backspace]   #'+snippets/delete-backward-char
+     [delete]      #'+snippets/delete-forward-char-or-field)))
 
 ;;; :tools
 (map!   (:after flycheck
@@ -337,26 +338,26 @@
           :n "RET"    #'flycheck-error-list-goto-error
           :n [return] #'flycheck-error-list-goto-error)
 
-    ;;   (:when (featurep! :tools gist)
-    ;;     :after gist
-    ;;     :map gist-list-menu-mode-map
-    ;;     :n "go"  #'gist-browse-current-url
-    ;;     :n "gr"  #'gist-list-reload
-    ;;     :n "c"   #'gist-add-buffer
-    ;;     :n "d"   #'gist-kill-current
-    ;;     :n "e"   #'gist-edit-current-description
-    ;;     :n "f"   #'gist-fork
-    ;;     :n "q"   #'kill-current-buffer
-    ;;     :n "s"   #'gist-star
-    ;;     :n "S"   #'gist-unstar
-    ;;     :n "y"   #'gist-print-current-url)
-    (:after evil-magit
-        ;; fix conflicts with private bindings
-        :map (magit-status-mode-map magit-revision-mode-map)
-        "C-j" nil
-        "C-k" nil)
-    (:map transient-map
-        "q" #'transient-quit-one))
+        ;;   (:when (featurep! :tools gist)
+        ;;     :after gist
+        ;;     :map gist-list-menu-mode-map
+        ;;     :n "go"  #'gist-browse-current-url
+        ;;     :n "gr"  #'gist-list-reload
+        ;;     :n "c"   #'gist-add-buffer
+        ;;     :n "d"   #'gist-kill-current
+        ;;     :n "e"   #'gist-edit-current-description
+        ;;     :n "f"   #'gist-fork
+        ;;     :n "q"   #'kill-current-buffer
+        ;;     :n "s"   #'gist-star
+        ;;     :n "S"   #'gist-unstar
+        ;;     :n "y"   #'gist-print-current-url)
+        (:after evil-magit
+          ;; fix conflicts with private bindings
+          :map (magit-status-mode-map magit-revision-mode-map)
+          "C-j" nil
+          "C-k" nil)
+        (:map transient-map
+          "q" #'transient-quit-one))
 
 ;;; :lang
 (map!   :after markdown-mode
@@ -376,16 +377,16 @@
 
       ;; C-u is used by evil
       :desc "Universal argument"    "u"    #'universal-argument
-    ;;   :desc "window"                "w"    evil-window-map
+      ;;   :desc "window"                "w"    evil-window-map
       :desc "help"                  "h"    help-map
 
       :desc "Toggle last popup"     "~"    #'+popup/toggle
       :desc "Find file"             "."    #'find-file
 
       :desc "Switch buffer"         ","    #'switch-to-buffer
-    ;;   (:when (featurep! :ui workspaces)
-    ;;     :desc "Switch workspace buffer" "," #'persp-switch-to-buffer
-    ;;     :desc "Switch buffer"           "<" #'switch-to-buffer)
+      ;;   (:when (featurep! :ui workspaces)
+      ;;     :desc "Switch workspace buffer" "," #'persp-switch-to-buffer
+      ;;     :desc "Switch buffer"           "<" #'switch-to-buffer)
 
       :desc "Resume last search"    "'"     #'ivy-resume
 
@@ -410,30 +411,30 @@
         :desc "Search other project"          "P" #'+default/search-other-project)
 
       ;;; <leader> TAB --- workspace
-    ;;   (:when (featurep! :ui workspaces)
-    ;;     (:prefix-map ("TAB" . "workspace")
-    ;;       :desc "Display tab bar"           "TAB" #'+workspace/display
-    ;;       :desc "Switch workspace"          "."   #'+workspace/switch-to
-    ;;       :desc "Switch to last workspace"  "`"   #'+workspace/other
-    ;;       :desc "New workspace"             "n"   #'+workspace/new
-    ;;       :desc "Load workspace from file"  "l"   #'+workspace/load
-    ;;       :desc "Save workspace to file"    "s"   #'+workspace/save
-    ;;       :desc "Delete session"            "x"   #'+workspace/kill-session
-    ;;       :desc "Delete this workspace"     "d"   #'+workspace/delete
-    ;;       :desc "Rename workspace"          "r"   #'+workspace/rename
-    ;;       :desc "Restore last session"      "R"   #'+workspace/restore-last-session
-    ;;       :desc "Next workspace"            "]"   #'+workspace/switch-right
-    ;;       :desc "Previous workspace"        "["   #'+workspace/switch-left
-    ;;       :desc "Switch to 1st workspace"   "1"   #'+workspace/switch-to-0
-    ;;       :desc "Switch to 2nd workspace"   "2"   #'+workspace/switch-to-1
-    ;;       :desc "Switch to 3rd workspace"   "3"   #'+workspace/switch-to-2
-    ;;       :desc "Switch to 4th workspace"   "4"   #'+workspace/switch-to-3
-    ;;       :desc "Switch to 5th workspace"   "5"   #'+workspace/switch-to-4
-    ;;       :desc "Switch to 6th workspace"   "6"   #'+workspace/switch-to-5
-    ;;       :desc "Switch to 7th workspace"   "7"   #'+workspace/switch-to-6
-    ;;       :desc "Switch to 8th workspace"   "8"   #'+workspace/switch-to-7
-    ;;       :desc "Switch to 9th workspace"   "9"   #'+workspace/switch-to-8
-    ;;       :desc "Switch to final workspace" "0"   #'+workspace/switch-to-final))
+      ;;   (:when (featurep! :ui workspaces)
+      ;;     (:prefix-map ("TAB" . "workspace")
+      ;;       :desc "Display tab bar"           "TAB" #'+workspace/display
+      ;;       :desc "Switch workspace"          "."   #'+workspace/switch-to
+      ;;       :desc "Switch to last workspace"  "`"   #'+workspace/other
+      ;;       :desc "New workspace"             "n"   #'+workspace/new
+      ;;       :desc "Load workspace from file"  "l"   #'+workspace/load
+      ;;       :desc "Save workspace to file"    "s"   #'+workspace/save
+      ;;       :desc "Delete session"            "x"   #'+workspace/kill-session
+      ;;       :desc "Delete this workspace"     "d"   #'+workspace/delete
+      ;;       :desc "Rename workspace"          "r"   #'+workspace/rename
+      ;;       :desc "Restore last session"      "R"   #'+workspace/restore-last-session
+      ;;       :desc "Next workspace"            "]"   #'+workspace/switch-right
+      ;;       :desc "Previous workspace"        "["   #'+workspace/switch-left
+      ;;       :desc "Switch to 1st workspace"   "1"   #'+workspace/switch-to-0
+      ;;       :desc "Switch to 2nd workspace"   "2"   #'+workspace/switch-to-1
+      ;;       :desc "Switch to 3rd workspace"   "3"   #'+workspace/switch-to-2
+      ;;       :desc "Switch to 4th workspace"   "4"   #'+workspace/switch-to-3
+      ;;       :desc "Switch to 5th workspace"   "5"   #'+workspace/switch-to-4
+      ;;       :desc "Switch to 6th workspace"   "6"   #'+workspace/switch-to-5
+      ;;       :desc "Switch to 7th workspace"   "7"   #'+workspace/switch-to-6
+      ;;       :desc "Switch to 8th workspace"   "8"   #'+workspace/switch-to-7
+      ;;       :desc "Switch to 9th workspace"   "9"   #'+workspace/switch-to-8
+      ;;       :desc "Switch to final workspace" "0"   #'+workspace/switch-to-final))
 
       ;;; <leader> b --- buffer
       (:prefix-map ("b" . "buffer")
@@ -443,7 +444,7 @@
         ;; (:when (featurep! :ui workspaces)
         ;;   :desc "Switch workspace buffer" "b" #'persp-switch-to-buffer
         ;;   :desc "Switch buffer"           "B" #'switch-to-buffer)
-          :desc "Switch buffer"             "b"   #'switch-to-buffer
+        :desc "Switch buffer"             "b"   #'switch-to-buffer
         :desc "Kill buffer"                 "k"   #'kill-current-buffer
         :desc "Next buffer"                 "n"   #'next-buffer
         :desc "New empty buffer"            "N"   #'evil-buffer-new
@@ -497,46 +498,46 @@
         ;;   :desc "Git time machine"          "t"   #'git-timemachine-toggle
         ;;   :desc "Jump to next hunk"         "]"   #'git-gutter:next-hunk
         ;;   :desc "Jump to previous hunk"     "["   #'git-gutter:previous-hunk)
-          :desc "Magit dispatch"            "/"   #'magit-dispatch
-          :desc "Forge dispatch"            "'"   #'forge-dispatch
-          :desc "Magit switch branch"       "b"   #'magit-branch-checkout
-          :desc "Magit status"              "g"   #'magit-status
-          :desc "Magit file delete"         "x"   #'magit-file-delete
-          :desc "Magit blame"               "B"   #'magit-blame-addition
-          :desc "Magit clone"               "C"   #'+magit/clone
-          :desc "Magit fetch"               "F"   #'magit-fetch
-          :desc "Magit buffer log"          "L"   #'magit-log
-          :desc "Git stage file"            "S"   #'magit-stage-file
-          :desc "Git unstage file"          "U"   #'magit-unstage-file
-          (:prefix ("f" . "find")
-            :desc "Find file"                 "f"   #'magit-find-file
-            :desc "Find gitconfig file"       "g"   #'magit-find-git-config-file
-            :desc "Find commit"               "c"   #'magit-show-commit
-            :desc "Find issue"                "i"   #'forge-visit-issue
-            :desc "Find pull request"         "p"   #'forge-visit-pullreq)
-          (:prefix ("o" . "open in browser")
-            :desc "Browse region or line"     "."   #'+vc/git-browse-region-or-line
-            :desc "Browse remote"             "r"   #'forge-browse-remote
-            :desc "Browse commit"             "c"   #'forge-browse-commit
-            :desc "Browse an issue"           "i"   #'forge-browse-issue
-            :desc "Browse a pull request"     "p"   #'forge-browse-pullreq
-            :desc "Browse issues"             "I"   #'forge-browse-issues
-            :desc "Browse pull requests"      "P"   #'forge-browse-pullreqs)
-          (:prefix ("l" . "list")
-            ;; (:when (featurep! :tools gist)
-            ;;   :desc "List gists"              "g"   #'+gist:list)
-            :desc "List repositories"         "r"   #'magit-list-repositories
-            :desc "List submodules"           "s"   #'magit-list-submodules
-            :desc "List issues"               "i"   #'forge-list-issues
-            :desc "List pull requests"        "p"   #'forge-list-pullreqs
-            :desc "List notifications"        "n"   #'forge-list-notifications)
-          (:prefix ("c" . "create")
-            :desc "Initialize repo"           "r"   #'magit-init
-            :desc "Clone repo"                "R"   #'+magit/clone
-            :desc "Commit"                    "c"   #'magit-commit-create
-            :desc "Branch"                    "b"   #'magit-branch-and-checkout
-            :desc "Issue"                     "i"   #'forge-create-issue
-            :desc "Pull request"              "p"   #'forge-create-pullreq))
+        :desc "Magit dispatch"            "/"   #'magit-dispatch
+        :desc "Forge dispatch"            "'"   #'forge-dispatch
+        :desc "Magit switch branch"       "b"   #'magit-branch-checkout
+        :desc "Magit status"              "g"   #'magit-status
+        :desc "Magit file delete"         "x"   #'magit-file-delete
+        :desc "Magit blame"               "B"   #'magit-blame-addition
+        :desc "Magit clone"               "C"   #'+magit/clone
+        :desc "Magit fetch"               "F"   #'magit-fetch
+        :desc "Magit buffer log"          "L"   #'magit-log
+        :desc "Git stage file"            "S"   #'magit-stage-file
+        :desc "Git unstage file"          "U"   #'magit-unstage-file
+        (:prefix ("f" . "find")
+          :desc "Find file"                 "f"   #'magit-find-file
+          :desc "Find gitconfig file"       "g"   #'magit-find-git-config-file
+          :desc "Find commit"               "c"   #'magit-show-commit
+          :desc "Find issue"                "i"   #'forge-visit-issue
+          :desc "Find pull request"         "p"   #'forge-visit-pullreq)
+        (:prefix ("o" . "open in browser")
+          :desc "Browse region or line"     "."   #'+vc/git-browse-region-or-line
+          :desc "Browse remote"             "r"   #'forge-browse-remote
+          :desc "Browse commit"             "c"   #'forge-browse-commit
+          :desc "Browse an issue"           "i"   #'forge-browse-issue
+          :desc "Browse a pull request"     "p"   #'forge-browse-pullreq
+          :desc "Browse issues"             "I"   #'forge-browse-issues
+          :desc "Browse pull requests"      "P"   #'forge-browse-pullreqs)
+        (:prefix ("l" . "list")
+          ;; (:when (featurep! :tools gist)
+          ;;   :desc "List gists"              "g"   #'+gist:list)
+          :desc "List repositories"         "r"   #'magit-list-repositories
+          :desc "List submodules"           "s"   #'magit-list-submodules
+          :desc "List issues"               "i"   #'forge-list-issues
+          :desc "List pull requests"        "p"   #'forge-list-pullreqs
+          :desc "List notifications"        "n"   #'forge-list-notifications)
+        (:prefix ("c" . "create")
+          :desc "Initialize repo"           "r"   #'magit-init
+          :desc "Clone repo"                "R"   #'+magit/clone
+          :desc "Commit"                    "c"   #'magit-commit-create
+          :desc "Branch"                    "b"   #'magit-branch-and-checkout
+          :desc "Issue"                     "i"   #'forge-create-issue
+          :desc "Pull request"              "p"   #'forge-create-pullreq))
 
       ;;; <leader> i --- insert
       (:prefix-map ("i" . "insert")
@@ -569,10 +570,10 @@
         :desc "REPL"               "r"  #'+eval/open-repl-other-window
         :desc "REPL (same window)" "R"  #'+eval/open-repl-same-window
         :desc "Dired"              "-"  #'dired-jump
-          :desc "Project sidebar" "p" #'+treemacs/toggle
-          :desc "Find file in project sidebar" "P" #'+treemacs/find-file)
-        ;; (:when (featurep! :tools docker)
-        ;;   :desc "Docker" "D" #'docker))
+        :desc "Project sidebar" "p" #'+treemacs/toggle
+        :desc "Find file in project sidebar" "P" #'+treemacs/find-file)
+      ;; (:when (featurep! :tools docker)
+      ;;   :desc "Docker" "D" #'docker))
 
       ;;; <leader> p --- project
       (:prefix-map ("p" . "project")
@@ -611,17 +612,17 @@
         :desc "Restart Emacs"                "R" #'doom/restart)
 
       ;;; <leader> s --- snippets
-        (:prefix-map ("s" . "snippets")
-          :desc "View snippet for mode"      "/" #'+snippets/find-for-current-mode
-          :desc "View snippet (global)"      "?" #'+snippets/find
-          :desc "Edit snippet"               "c" #'+snippet/edit
-          :desc "View private snippet"       "f" #'+snippets/find-private
-          :desc "Insert snippet"             "i" #'yas-insert-snippet
-          :desc "New snippet"                "n" #'+snippet/new
-          :desc "New snippet alias"          "N" #'+snippet/new-alias
-          :desc "Reload snippets"            "r" #'yas-reload-all
-          :desc "Create temporary snippet"   "s" #'aya-create
-          :desc "Expand temporary snippet"   "e" #'aya-expand)
+      (:prefix-map ("s" . "snippets")
+        :desc "View snippet for mode"      "/" #'+snippets/find-for-current-mode
+        :desc "View snippet (global)"      "?" #'+snippets/find
+        :desc "Edit snippet"               "c" #'+snippet/edit
+        :desc "View private snippet"       "f" #'+snippets/find-private
+        :desc "Insert snippet"             "i" #'yas-insert-snippet
+        :desc "New snippet"                "n" #'+snippet/new
+        :desc "New snippet alias"          "N" #'+snippet/new-alias
+        :desc "Reload snippets"            "r" #'yas-reload-all
+        :desc "Create temporary snippet"   "s" #'aya-create
+        :desc "Expand temporary snippet"   "e" #'aya-expand)
 
       ;;; <leader> t --- toggle
       (:prefix-map ("t" . "toggle")
@@ -690,38 +691,38 @@ To change these keys see `+default-repeat-keys'."
 ;; Have C-u behave similarly to `doom/backward-to-bol-or-indent'.
 ;; NOTE SPC u replaces C-u as the universal argument.
 (map! :gi "C-u" #'doom/backward-kill-to-bol-and-indent
-    :gi "C-w" #'backward-kill-word
-    ;; Vimmish ex motion keys
-    :gi "C-b" #'backward-word
-    :gi "C-f" #'forward-word)
+      :gi "C-w" #'backward-kill-word
+      ;; Vimmish ex motion keys
+      :gi "C-b" #'backward-word
+      :gi "C-f" #'forward-word)
 
 (with-eval-after-load 'view
-(define-key view-mode-map [escape] #'View-quit-all))
+  (define-key view-mode-map [escape] #'View-quit-all))
 (with-eval-after-load 'man
-(evil-define-key* 'normal Man-mode-map "q" #'kill-current-buffer))
+  (evil-define-key* 'normal Man-mode-map "q" #'kill-current-buffer))
 
 ;; Minibuffer
 (define-key! evil-ex-completion-map
-"C-a" #'move-beginning-of-line
-"C-b" #'backward-word
-"C-s" #'counsel-minibuffer-history)
+  "C-a" #'move-beginning-of-line
+  "C-b" #'backward-word
+  "C-s" #'counsel-minibuffer-history)
 
 (define-key! :keymaps +default-minibuffer-maps
-[escape] #'abort-recursive-edit
-"C-v"    #'yank
-"C-z"    (lambda () (interactive) (ignore-errors (call-interactively #'undo)))
-"C-a"    #'move-beginning-of-line
-"C-b"    #'backward-word
-"C-r"    #'evil-paste-from-register
-;; Scrolling lines
-"C-j"    #'next-line
-"C-k"    #'previous-line
-"C-S-j"  #'scroll-up-command
-"C-S-k"  #'scroll-down-command)
+  [escape] #'abort-recursive-edit
+  "C-v"    #'yank
+  "C-z"    (lambda () (interactive) (ignore-errors (call-interactively #'undo)))
+  "C-a"    #'move-beginning-of-line
+  "C-b"    #'backward-word
+  "C-r"    #'evil-paste-from-register
+  ;; Scrolling lines
+  "C-j"    #'next-line
+  "C-k"    #'previous-line
+  "C-S-j"  #'scroll-up-command
+  "C-S-k"  #'scroll-down-command)
 
 (define-key! read-expression-map
-"C-j" #'next-line-or-history-element
-"C-k" #'previous-line-or-history-element)
+  "C-j" #'next-line-or-history-element
+  "C-k" #'previous-line-or-history-element)
 
 (provide 'badliveware-evil-keybinds)
-;;; badliveware-evik-keybinds.el ends here
+;;; badliveware-evil-keybinds.el ends here

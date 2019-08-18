@@ -502,4 +502,6 @@ The point of this is to avoid Emacs locking up indexing massive file trees."
               #'projectile-find-file)))
 
          (#'counsel-file-jump))))
+
+(provide 'badliveware-ivy-util)
 ;;; badliveware-ivy-util.el ends here

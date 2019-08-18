@@ -1,3 +1,4 @@
+;;; badliveware-projectile-util.el -*- lexical-binding: t; -*-
 
 (defvar projectile-project-root nil)
 
@@ -142,3 +143,6 @@ If DIR is not a project, it will be indexed (but not cached)."
            ((featurep! :completion helm)
             #'helm-find-files)
            (#'find-file)))))
+
+(provide 'badliveware-projectile-util)
+;;; badliveware-projectile-util.el ends here

@@ -13,6 +13,6 @@
     (projectile-completion-system 'ivy)
     (projectile-enable-caching t))
 
-
+(require 'badliveware-projectile-util)
 (provide 'badliveware-projectile)
 ;;; badliveware-projectile.el ends here

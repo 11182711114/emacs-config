@@ -39,7 +39,6 @@
 (add-to-list 'default-frame-alist '(menu-bar-lines . 0))
 (add-to-list 'default-frame-alist '(vertical-scroll-bars))
 
-
 (setq-default
  ad-redefinition-action 'accept                   ; Silence warnings for redefinition
  auto-window-vscroll nil                          ; Lighten vertical scroll
@@ -86,8 +85,8 @@
  auto-save-default nil
  create-lockfiles nil
  history-length 500
- make-backup-files nil  ; don't create backup~ files
- ) 
+ make-backup-files nil)  ; don't create backup~ files
+(fset #'display-startup-echo-area-message #'ignore)
 
 (cd "~/")                                         ; Move to the user directory
 (delete-selection-mode 1)                         ; Replace region when inserting text

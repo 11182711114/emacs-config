@@ -290,5 +290,7 @@ immediately runs it on the current candidate (ending the ivy session)."
                                              counsel-projectile-find-dir)))
       (all-the-icons-ivy-setup))))
 
+(require 'badliveware-ivy-util)
+
 (provide 'badliveware-ivy)
 ;;; badliveware-ivy.el ends here
