@@ -12,6 +12,7 @@
   (add-to-list 'load-path (concat my/config-dir "editor/"))
   (add-to-list 'load-path (concat my/config-dir "tools/"))
   (add-to-list 'load-path (concat my/config-dir "tools/project/"))
+  (add-to-list 'load-path (concat my/config-dir "tools/magit/"))
 
   ;; Core
   (require 'badliveware-defaults)

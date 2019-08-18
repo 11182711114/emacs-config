@@ -3,6 +3,7 @@
 (require 'use-package)
 (require 'general)
 (require 'evil)
+(require 'badliveware-magit-util)
 
 (setq use-magit-commit-prompt-p nil)
 (defun use-magit-commit-prompt (&rest args)
@@ -47,7 +48,33 @@
     (magit-refs-show-commit-count 'all)
     (magit-section-show-child-count t)
     :config
-    (remove-hook 'magit-section-highlight-hook #'magit-section-highlight))
+    (remove-hook 'magit-section-highlight-hook #'magit-section-highlight)
+  (setq transient-default-level 5
+        magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")
+        magit-diff-refine-hunk t) ; show granular diffs in selected hunk
+
+  ;; Magit uses `magit-display-buffer-traditional' to display windows, by
+  ;; default, which is a little primitive. `+magit-display-buffer' marries
+  ;; `magit-display-buffer-fullcolumn-most-v1' with
+  ;; `magit-display-buffer-same-window-except-diff-v1', except:
+  ;;
+  ;; 1. Magit sub-buffers (like `magit-log') that aren't spawned from a status
+  ;;    screen are opened as popups.
+  ;; 2. The status screen isn't buried when viewing diffs or logs from the
+  ;;    status screen.
+  (setq transient-display-buffer-action '(display-buffer-below-selected)
+        magit-display-buffer-function #'+magit-display-buffer)
+;;   (set-popup-rule! "^\\(?:\\*magit\\|magit:\\| \\*transient\\*\\)" :ignore t)
+
+  ;; Add --tags switch
+  (transient-append-suffix 'magit-fetch
+    "-p" '("-t" "Fetch all tags" ("-t" "--tags")))
+
+  ;; properly kill leftover magit buffers on quit
+  (define-key magit-status-mode-map [remap magit-mode-bury-buffer] #'+magit/quit)
+
+  ;; Close transient with ESC
+  (define-key transient-map [escape] #'transient-quit-one))
 
 
 (use-package evil-magit
