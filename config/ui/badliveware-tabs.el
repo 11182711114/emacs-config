@@ -1,4 +1,6 @@
-;;; badliveware-tabs.el -*- lexical-binding: t; -*-
+;;; badliveware-tabs.el --- -*- lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 (require 'use-package)
 (require 'general)
 (require 'evil)
@@ -14,7 +16,7 @@
     (centaur-tabs-group-by-projectile-project)
     (centaur-tabs-headline-match)
     :hook
-    ((prog-mode dashboard-mode term-mode calendar-mode org-agenda-mode helpful-mode) 
+    ((prog-mode dashboard-mode term-mode calendar-mode org-agenda-mode helpful-mode)
         . centaur-tabs-local-mode)
     :config
     (centaur-tabs-mode t)

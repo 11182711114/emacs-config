@@ -81,6 +81,7 @@
   (setq image-dired-dir (concat my/cache-dir "image-dir")
         ranger-override-dired t
         ranger-dont-show-binary t
+        ranger-show-hidden t
         ranger-max-preview-size 10)
   :config
   (unless (file-directory-p image-dired-dir)
@@ -112,7 +113,7 @@
         ranger-deer-show-details t
         ranger-max-preview-size 10
         ranger-show-literal nil
-        ranger-hide-cursor nil))
+        ranger-hide-cursor t))
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))

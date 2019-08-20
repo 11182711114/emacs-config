@@ -140,8 +140,7 @@
 
       ;; Plugins
       ;; evil-easymotion
-      ;; :m  "gs"    #'+evil/easymotion  ; lazy-load `evil-easymotion'
-      :m  "gs"    #'evil-forward-word-begin  ; lazy-load `evil-easymotion'
+      :m  "gs"    #'+evil/easymotion  ; lazy-load `evil-easymotion'
       (:after evil-easymotion
         :map evilem-map
         "a" (evilem-create #'evil-forward-arg)

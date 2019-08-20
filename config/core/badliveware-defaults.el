@@ -29,6 +29,8 @@
  transient-levels-file        (concat my/cache-dir "transient/levels.el")
  transient-values-file        (concat my/cache-dir "transient/values.el")
  treemacs-persist-file        (concat my/etc-dir "treemacs-persist.org")
+ bookmark-default-file        (concat my/etc-dir "bookmarks")
+ custom-file                  (concat my/etc-dir "custom.el")
  undo-tree-history-directory-alist 
  (list (cons "." (concat my/etc-dir "undo-tree-hist/")))
  user-emacs-ensime-directory  (concat my/etc-dir "ensime/")

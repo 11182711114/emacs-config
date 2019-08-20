@@ -40,14 +40,10 @@
     nil))
 
 (use-package dumb-jump
-  :commands dumb-jump-result-follow
   :config
-  (setq dumb-jump-default-project doom-emacs-dir
+  (setq dumb-jump-default-project my/emacs-dir
         dumb-jump-aggressive nil
-        dumb-jump-selector
-        (cond ((featurep! :completion ivy)  'ivy)
-              ((featurep! :completion helm) 'helm)
-              ('popup)))
+        dumb-jump-selector 'ivy)
   (add-hook 'dumb-jump-after-jump-hook #'better-jumper-set-jump))
 
 (provide 'badliveware-jump)

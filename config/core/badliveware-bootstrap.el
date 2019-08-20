@@ -8,11 +8,19 @@
   ;; Load paths
   (add-to-list 'load-path (concat my/config-dir "core/"))
   (add-to-list 'load-path (concat my/config-dir "core/ivy/"))
-  (add-to-list 'load-path (concat my/config-dir "ui/"))
+  
   (add-to-list 'load-path (concat my/config-dir "editor/"))
+
   (add-to-list 'load-path (concat my/config-dir "tools/"))
+  (add-to-list 'load-path (concat my/config-dir "tools/company/"))
   (add-to-list 'load-path (concat my/config-dir "tools/project/"))
   (add-to-list 'load-path (concat my/config-dir "tools/magit/"))
+
+  (add-to-list 'load-path (concat my/config-dir "lang/"))
+  (add-to-list 'load-path (concat my/config-dir "lang/web/"))
+  (add-to-list 'load-path (concat my/config-dir "lang/javascript/"))
+
+  (add-to-list 'load-path (concat my/config-dir "ui/"))
 
   ;; Core
   (require 'badliveware-defaults)
@@ -36,6 +44,10 @@
   (require 'badliveware-jump)
   (require 'badliveware-company)
   (require 'badliveware-org)
+  (require 'badliveware-lsp)
+
+  ;; Languages
+  (require 'web)
 
   ;; User interface - Do this last to prevent flickering
   (require 'badliveware-theme)

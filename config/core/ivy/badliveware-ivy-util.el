@@ -366,10 +366,7 @@ order.
                     (let ((query (buffer-substring-no-properties beg end)))
                       ;; Escape characters that are special to ivy searches
                       (replace-regexp-in-string "[! |]" (lambda (substr)
-                                                          (cond ((and (featurep! +fuzzy)
-                                                                      (string= substr " "))
-                                                                 "  ")
-                                                                ((and (string= substr "|")
+                                                          (cond ((and (string= substr "|")
                                                                       (eq engine 'rg))
                                                                  "\\\\\\\\|")
                                                                 ((concat "\\\\" substr))))
