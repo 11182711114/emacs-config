@@ -5,7 +5,7 @@
 (require 'use-package)
 
 (use-package lsp-mode
-    :commands lsp)
+  :commands lsp)
 
 (defun lsp! (&optional arg)
   "Enable `lsp-mode' in the current buffer.
@@ -39,10 +39,10 @@ been moved out to their respective modules, or these hooks:
 (after! lsp-mode
   (when (featurep 'badliveware-lookup-lib)
     (set-lookup-handlers! 'lsp-mode
-                          :async t
-                          :documentation 'lsp-describe-thing-at-point
-                          :definition 'lsp-find-definition
-                          :references 'lsp-find-references))
+      :async t
+      :documentation 'lsp-describe-thing-at-point
+      :definition 'lsp-find-definition
+      :references 'lsp-find-references))
 
   ;; The original `lsp' initializes too much, too quickly. Things like flycheck,
   ;; company, and yasnippet. Doom's modules already handle these just fine, so
@@ -58,8 +58,8 @@ been moved out to their respective modules, or these hooks:
   :init
   (defun +lsp|init-ui-flycheck ()
     "Sets up flycheck-mode."
-      (require 'lsp-ui-flycheck)
-      (lsp-ui-flycheck-enable t))
+    (require 'lsp-ui-flycheck)
+    (lsp-ui-flycheck-enable t))
   (add-hook 'lsp-ui-mode-hook #'+lsp|init-ui-flycheck)
   :config
   (setq lsp-prefer-flymake nil
@@ -72,13 +72,14 @@ been moved out to their respective modules, or these hooks:
 
   (when (featurep 'badliveware-lookup-lib)
     (set-lookup-handlers! 'lsp-ui-mode :async t
-                          :definition 'lsp-ui-peek-find-definitions
-                          :references 'lsp-ui-peek-find-references)))
+      :definition 'lsp-ui-peek-find-definitions
+      :references 'lsp-ui-peek-find-references)))
 
 
 (use-package company-lsp
   :defer t
   :init
+  (setq company-lsp-async t)
   ;; Make sure that `company-capf' is disabled since it is incompatible with
   ;; `company-lsp' (see lsp-mode#884)
   (defun +lsp|init-company ()
@@ -92,3 +93,4 @@ been moved out to their respective modules, or these hooks:
 
 (provide 'badliveware-lsp)
 ;;; badliveware-lsp.el ends here
+

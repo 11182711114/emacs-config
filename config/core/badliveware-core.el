@@ -1,5 +1,6 @@
-;;; badliveware-core.el -*- lexical-binding: t; -*-
-
+;;; badliveware-core.el --- -*- lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 (require 'badliveware-constants)
 (require 'use-package)
 
@@ -14,5 +15,8 @@
         `(("." . ,(concat my/cache-dir "undo-tree-hist/"))))
   (global-undo-tree-mode +1))
 
+(use-package restart-emacs)
+
 (provide 'badliveware-core)
 ;;; badliveware-core.el ends here
+

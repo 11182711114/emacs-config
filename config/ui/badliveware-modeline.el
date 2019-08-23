@@ -1,4 +1,6 @@
 ;;; badliveware-modeline.el -*- lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 
 (require 'use-package)
 
@@ -20,7 +22,8 @@
   (org-mode . doom-modeline-mode)
   (theme-load . doom-modeline-refresh-bars)
   (doom-modeline-mode . size-indication-mode) ; filesize in modeline
-  (doom-modeline-mode . column-number-mode)) ; cursor column in modeline
+  (doom-modeline-mode . column-number-mode)
+  (doom-modeline-mode . doom-themes-visual-bell-config)) ; cursor column in modeline
 
 
 
@@ -35,3 +38,4 @@
 
 (provide 'badliveware-modeline)
 ;;; badliveware-modeline.el ends here
+

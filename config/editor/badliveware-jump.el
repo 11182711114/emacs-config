@@ -1,4 +1,6 @@
-;;; badliveware-evil.el -*- lexical-binding: t; -*-
+;;; badliveware-jump.el --- -*- lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 
 (require 'use-package)
 (require 'evil)
@@ -47,4 +49,5 @@
   (add-hook 'dumb-jump-after-jump-hook #'better-jumper-set-jump))
 
 (provide 'badliveware-jump)
-;;; badliveware-evil.el ends here
+;;; badliveware-jump.el ends here
+
