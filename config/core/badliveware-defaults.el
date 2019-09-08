@@ -96,7 +96,7 @@
 (fset 'yes-or-no-p 'y-or-n-p)                     ; Replace yes/no prompts with y/n
 (global-subword-mode 1)                           ; Iterate through CamelCase words
 (menu-bar-mode 0)                                 ; Disable the menu bar
-(mouse-avoidance-mode 'banish)                    ; Avoid collision of mouse with point
+;; (mouse-avoidance-mode 'banish)                    ; Avoid collision of mouse with point
 (put 'downcase-region 'disabled nil)              ; Enable downcase-region
 (put 'upcase-region 'disabled nil)                ; Enable upcase-region
 (blink-cursor-mode -1)                            ; Disable blinking cursor
