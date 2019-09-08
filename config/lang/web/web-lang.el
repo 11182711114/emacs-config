@@ -1,13 +1,13 @@
-;;; web.el --- web module -*- lexical-binding: t; -*-
+;;; web-lang.el --- web module -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Provides web functionality
 ;;; Code:
 (require 'badliveware-projectile-util)
 (require 'badliveware-company-lib)
 
-(require 'javascript)
-(require 'html)
-(require 'css)
+(require 'javascript-lang)
+(require 'html-lang)
+(require 'css-lang)
 
 
 (def-project-mode! +web-angularjs-mode
@@ -18,5 +18,5 @@
   :modes (+javascript-npm-mode)
   :when (+javascript-npm-dep-p 'react))
 
-(provide 'web)
-;;; web.el ends here
+(provide 'web-lang)
+;;; web-lang.el ends here

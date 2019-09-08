@@ -1,4 +1,6 @@
 ;;; badliveware-lib.el -*- lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 (require 'subr-x)
 (require 'cl-lib)
 (defun doom--resolve-path-forms (spec &optional directory)

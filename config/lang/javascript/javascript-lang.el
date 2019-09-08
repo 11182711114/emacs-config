@@ -1,4 +1,4 @@
-;;; javascript.el --- javascript module -*- lexical-binding: t; -*-
+;;; javascript-lang.el --- javascript module -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Provides javascript functionality
 ;;; Code:
@@ -93,23 +93,23 @@
   (typescript-mode . #'lsp!)
   :config
   (setq-hook! 'typescript-mode-hook
-    comment-line-break-function #'js2-line-break)
-  (set-pretty-symbols! 'typescript-mode
-    ;; Functional
-    :def "function"
-    :lambda "() =>"
-    :composition "compose"
-    ;; Types
-    :null "null"
-    :true "true" :false "false"
-    :int "number"
-    :str "string"
-    :bool "boolean"
-    ;; Flow
-    :not "!"
-    :and "&&" :or "||"
-    :for "for"
-    :return "return" :yield "import"))
+    comment-line-break-function #'js2-line-break))
+  ;; (set-pretty-symbols! 'typescript-mode
+  ;;   ;; Functional
+  ;;   :def "function"
+  ;;   :lambda "() =>"
+  ;;   :composition "compose"
+  ;;   ;; Types
+  ;;   :null "null"
+  ;;   :true "true" :false "false"
+  ;;   :int "number"
+  ;;   :str "string"
+  ;;   :bool "boolean"
+  ;;   ;; Flow
+  ;;   :not "!"
+  ;;   :and "&&" :or "||"
+  ;;   :for "for"
+  ;;   :return "return" :yield "import"))
 ;;
 ;;; Tools
 
@@ -210,5 +210,5 @@ to tide."
 (def-project-mode! +javascript-gulp-mode
   :when (locate-dominating-file default-directory "gulpfile.js"))
 
-(provide 'javascript)
-;;; javascript.el ends here
+(provide 'javascript-lang)
+;;; javascript-lang.el ends here

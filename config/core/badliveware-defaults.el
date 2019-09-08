@@ -108,4 +108,10 @@
 (unless IS-WINDOWS
   (setq selection-coding-system 'utf-8))          ; with sugar on top
 
+;;; Fix emacs high idle cpu?
+(setq history-length 100)
+(put 'minibuffer-history 'history-length 50)
+(put 'evil-ex-history 'history-length 50)
+(put 'kill-ring 'history-length 25)
+
 (provide 'badliveware-defaults)

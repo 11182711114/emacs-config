@@ -1,4 +1,4 @@
-;;; css.el --- css module -*- lexical-binding: t; -*-
+;;; css-lang.el --- css module -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Provides css functionality
 ;;; Code:
@@ -41,5 +41,5 @@
             '("less" "css")
             '("styl" "css")))
 
-(provide 'css)
-;;; css.el ends here
+(provide 'css-lang)
+;;; css-lang.el ends here

@@ -1,4 +1,6 @@
-;;; badliveware-dired.el -*- lexical-binding: t; -*-
+;;; badliveware-dired.el --- -*- lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 
 (require 'use-package)
 (require 'badliveware-keybinds)
@@ -82,7 +84,8 @@
         ranger-override-dired t
         ranger-dont-show-binary t
         ranger-show-hidden t
-        ranger-max-preview-size 10)
+        ranger-max-preview-size 10
+        ranger-preview-delay 0.1)
   :config
   (unless (file-directory-p image-dired-dir)
     (make-directory image-dired-dir))
@@ -120,3 +123,4 @@
 
 (provide 'badliveware-dired)
 ;;; badliveware-dired.el ends here
+

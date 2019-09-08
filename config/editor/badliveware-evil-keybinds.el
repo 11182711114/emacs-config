@@ -1,6 +1,9 @@
-;;; badliveware-evil-keybinds.el -*- lexical-binding: t; -*-
+;;; badliveware-evil-keybinds.el --- -*- lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 (require 'badliveware-keybinds)
 (require 'badliveware-evil)
+(require 'badliveware-lib)
 
 (setq evil-collection-key-blacklist
       (list "C-j" "C-k" "gd" "gf" "K" "[" "]" "gz" "<escape>"
@@ -10,7 +13,6 @@
 
 ;;
 ;;; Global keybindings
-
 (map! (:map override
         ;; A little sandbox to run code in
         "M-;" #'eval-expression
@@ -21,7 +23,7 @@
                  (and (bound-and-true-p yas-minor-mode)
                       (yas-maybe-expand-abbrev-key-filter 'yas-expand))
                  'yas-expand)
-      :n [tab] 
+      :n [tab]
       (general-predicate-dispatch nil
         ;;  (and (featurep! :editor fold)
         ;;       (save-excursion (end-of-line) (invisible-p (point))))
@@ -162,7 +164,6 @@
                   (call-interactively #'avy-goto-char-timer)))
         "/" #'avy-goto-char-timer)
 
-      
 
       ;; text object plugins
       :textobj "x" #'evil-inner-xml-attr               #'evil-outer-xml-attr
@@ -186,7 +187,6 @@
       :v "S" #'evil-surround-region
       :o "s" #'evil-surround-edit
       :o "S" #'evil-Surround-edit)
-
 
 ;;
 ;;; Module keybinds
@@ -247,7 +247,7 @@
    [C-return] (+ivy-do-action! #'+ivy-git-grep-other-window-action)))
 
 ;;; :ui
-;; (map! 
+;; (map!
 ;;   (:when (featurep! :ui workspaces)
 ;;     :n "gt"    #'+workspace/switch-right
 ;;     :n "gT"    #'+workspace/switch-left
@@ -267,7 +267,7 @@
 ;;     :g "M-T"   #'+workspace/display))
 
 ;;; :editor
-(map! 
+(map!
  ;;   (:when (featurep! :editor fold)
  ;;     :nv "C-SPC" #'+fold/toggle)
 
@@ -389,7 +389,7 @@
 
       :desc "Resume last search"    "'"     #'ivy-resume
 
-      :desc "Search for symbol in project" "*" #'+default/search-project-for-symbol-at-point
+      :desc "Search for symbol in project" "*" #'counsel-projectile-rg
 
       :desc "Find file in project"  "SPC"  #'projectile-find-file
       :desc "Blink cursor line"     "DEL"  #'+nav-flash/blink-cursor
@@ -568,7 +568,7 @@
         :desc "Start debugger"     "d"  #'+debugger/start
         :desc "REPL"               "r"  #'+eval/open-repl-other-window
         :desc "REPL (same window)" "R"  #'+eval/open-repl-same-window
-        :desc "Dired"              "-"  #'dired-jump
+        :desc "Dired"              "-"  #'ranger
         :desc "Project sidebar" "p" #'+treemacs/toggle
         :desc "Find file in project sidebar" "P" #'+treemacs/find-file)
       ;; (:when (featurep! :tools docker)
@@ -608,7 +608,7 @@
         :desc "Save session to file"         "S" #'doom/save-session
         :desc "Restore session from file"    "L" #'doom/load-session
         :desc "Restart & restore Emacs"      "r" #'doom/restart-and-restore
-        :desc "Restart Emacs"                "R" #'doom/restart)
+        :desc "Restart Emacs"                "R" #'restart-emacs)
 
       ;;; <leader> s --- snippets
       (:prefix-map ("s" . "snippets")

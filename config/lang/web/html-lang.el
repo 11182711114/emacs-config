@@ -1,4 +1,4 @@
-;;; html.el --- html module -*- lexical-binding: t; -*-
+;;; html-lang.el --- html module -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Provides html functionality
 ;;; Code:
@@ -130,5 +130,5 @@
   (set-company-backend! 'web-mode 'company-web-html))
 (add-hook! (html-mode web-mode) #'lsp!)
 
-(provide 'html)
-;;; html.el ends here
+(provide 'html-lang)
+;;; html-lang.el ends here

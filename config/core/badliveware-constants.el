@@ -1,4 +1,6 @@
-;;; badliveware-constants.el -*- lexical-binding: t; -*-
+;;; badliveware-constants.el --- -*- lexical-binding: t; -*-
+;;; Commentary:
+;;; Code:
 
 (defconst EMACS26+ (> emacs-major-version 25))
 (defconst EMACS27+ (> emacs-major-version 26))
@@ -8,7 +10,7 @@
 (defconst IS-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
 (defconst IS-BSD     (or IS-MAC (eq system-type 'berkeley-unix)))
 
-(defvar my/emacs-dir    (eval-when-compile (file-truename user-emacs-directory))    
+(defvar my/emacs-dir    (eval-when-compile (file-truename user-emacs-directory))
   "The path to the currently loaded .emacs.d directory. Must end with a slash.")
 (defvar my/local-dir    (concat my/emacs-dir ".local/")     "Root directory for local storage.")
 
